@@ -16,7 +16,7 @@ public class MainApp extends Application {
     public void start(Stage stage) {
         // ১. একটি টেক্সট ফিল্ড (যেখানে ইউজার নাম লিখবে)
         TextField nameInput = new TextField();
-        nameInput.setPromptText("আপনার নাম লিখুন...");
+        nameInput.setPromptText("আপনার নাম লিখুন quick...");
         nameInput.setMaxWidth(200); // বক্সটি বেশি বড় না হওয়ার জন্য
 
         // ২. একটি লেবেল (যেখানে মেসেজ দেখাবে)
