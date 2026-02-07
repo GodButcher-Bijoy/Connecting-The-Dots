@@ -21,7 +21,7 @@ public class MainApp extends Application {
         Pane root = new Pane();
 
         // স্ক্রিনের সাইজ
-        double width = 800;
+        double width = 900;
         double height = 600;
 
         // ২. ব্যাকগ্রাউন্ড কালার সেটআপ (Royal Blue)
