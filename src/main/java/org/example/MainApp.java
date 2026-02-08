@@ -21,6 +21,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Pane;
 import javafx.geometry.Pos;
+import javafx.scene.control.ScrollPane; // এটার জন্য এরর দিচ্ছে
+import javafx.scene.layout.Priority;    // VBox.setVgrow এর জন্য এটা লাগবে
+import javafx.scene.input.KeyCode;      // Enter বাটন চেনার জন্য এটা লাগবে
 
 public class MainApp extends Application {
 
@@ -159,97 +162,145 @@ public class MainApp extends Application {
 
     // এই মেথডটি মেইন সিন (Graph Plotting UI) রিটার্ন করবে
     private Scene createMainScene(Stage stage) {
-        // ১. মেইন লেআউট (BorderPane সেরা কারণ এতে Top, Bottom, Left, Center ভাগ করা যায়)
         BorderPane root = new BorderPane();
 
-        // ================= SIDEBAR (বাম পাশ - ইনপুট এরিয়া) =================
-        VBox sidebar = new VBox(20); // ২০ পিক্সেল গ্যাপ
-        sidebar.setPadding(new Insets(30)); // চারপাশ থেকে প্যাডিং
-        sidebar.setPrefWidth(400); // সাইডবার ৩০০ পিক্সেল চওড়া হবে
-        sidebar.setStyle("-fx-background-color: #121212;");// গাঢ় নীল-ধূসর কালার
-        sidebar.setAlignment(Pos.CENTER_LEFT);
+        // ---------------- SIDEBAR ----------------
+        VBox sidebar = new VBox(15);
+        sidebar.setPadding(new Insets(30));
+        sidebar.setPrefWidth(400);
+        sidebar.setAlignment(Pos.TOP_LEFT); // টপ থেকে শুরু হবে
 
-        // টাইটেল
-        Label inputLabel = new Label("Enter Function:");
-        inputLabel.setTextFill(Color.DEEPPINK);
-        inputLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-
-        // ইকুয়েশন ইনপুট বক্স
-        TextField equationInput = new TextField();
-        equationInput.setPromptText("Ex: sin(x) + x^2"); // হালকা করে লেখা থাকবে
-        equationInput.setPrefHeight(40); // একটু মোটা বক্স
-        equationInput.setFont(Font.font(16));
-        equationInput.setPadding(new Insets(20));
-        // বক্সের ডিজাইন (CSS)
-        equationInput.setStyle(
-                "-fx-background-color: #1F1F1F; " +
-                        "-fx-background-radius: 10; " +
-                        "-fx-border-color: #9D00FF; " +
-                        "-fx-border-width: 5; " +
-                        "-fx-border-radius: 10; " +
-                        "-fx-text-fill: white; " +
-
-                        // নতুন অংশ: ফন্ট স্টাইল
-                        "-fx-font-size: 15px; " +           // সাইজ একটু বাড়ালাম (১৮ পিক্সেল)
-                        "-fx-font-family: 'Verdana'; " +    // ফন্টের নাম (Verdana, Arial, বা Impact দিতে পারো)
-                        "-fx-font-weight: bold;"            // লেখা বোল্ড হবে
+        // আপনার দেওয়া এক্সাক্ট সাইডবার স্টাইল
+        sidebar.setStyle(
+                "-fx-background-color: #121212; " +
+                        "-fx-border-color: Purple; " +
+                        "-fx-border-width: 4px; " +
+                        "-fx-border-style: solid inside;"
         );
 
-        // X-Range ইনপুট (অপশনাল - পরে কাজে লাগবে)
+        // হেডার লেভেল
+        Label inputLabel = new Label("Enter Function:");
+        inputLabel.setTextFill(Color.DEEPPINK); // আপনার কালার
+        inputLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+
+        // --- SCROLLABLE INPUT AREA START ---
+
+        // ১. একটা কন্টেইনার বানাই যেটা সব ইনপুট বক্স ধরে রাখবে
+        VBox functionContainer = new VBox(15); // বক্সগুলোর মাঝে ১৫ পিক্সেল গ্যাপ
+        functionContainer.setStyle("-fx-background-color: transparent;");
+
+        // ২. শুরুতে ৩টা বা ৫টা ফাঁকা ইনপুট বক্স দিয়ে দিই
+        for(int i=0; i<3; i++) {
+            addFunctionInputBox(functionContainer);
+        }
+
+        // ৩. স্ক্রলপ্যান সেটআপ
+        ScrollPane scrollPane = new ScrollPane(functionContainer);
+        scrollPane.setFitToWidth(true); // সাইডবারের সমান চওড়া
+        // স্ক্রলপ্যানের ব্যাকগ্রাউন্ড ট্রান্সপারেন্ট করছি যাতে আপনার কালো ব্যাকগ্রাউন্ড দেখা যায়
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // নিচের বারের দরকার নেই
+
+        // --- SCROLLABLE INPUT AREA END ---
+
+        // X-Range (নিচে থাকবে)
         Label rangeLabel = new Label("X Range (Min, Max):");
         rangeLabel.setTextFill(Color.LIGHTGRAY);
+        rangeLabel.setPadding(new Insets(10, 0, 5, 0));
 
         HBox rangeBox = new HBox(10);
         TextField minInput = new TextField("-10");
         TextField maxInput = new TextField("10");
         minInput.setPrefWidth(100); maxInput.setPrefWidth(100);
+
+        // রেঞ্জ ইনপুটের স্টাইল (আপনার আগের কোড অনুযায়ী একটু মডিফাই করা)
+        String rangeStyle = "-fx-background-color: #1F1F1F; -fx-text-fill: white; -fx-border-color: gray; -fx-border-radius: 5; -fx-background-radius: 5;";
+        minInput.setStyle(rangeStyle);
+        maxInput.setStyle(rangeStyle);
+
         rangeBox.getChildren().addAll(minInput, maxInput);
 
-        // প্লট বাটন
-        Button plotBtn = new Button("PLOT GRAPH");
-        plotBtn.setPrefWidth(Double.MAX_VALUE); // পুরো জায়গা জুড়ে থাকবে
-        plotBtn.setPrefHeight(45);
-        plotBtn.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        plotBtn.setTextFill(Color.WHITE);
-        // বাটনের কালার (একটু উজ্জ্বল কমলা বা সবুজ)
-        plotBtn.setStyle("-fx-background-color: #BB86FC; -fx-background-radius: 10; -fx-cursor: hand;");
+        // সাইডবারে সব অ্যাড করা (Plot Button বাদ দিয়েছি)
+        // VBox.setVgrow দিয়ে স্ক্রলপ্যানকে বলছি বাকি সব জায়গা নিয়ে নিতে
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        // বাটন হোভার ইফেক্ট (মাউস নিলে কালার চেঞ্জ হবে)
-        plotBtn.setOnMouseEntered(e -> plotBtn.setStyle("-fx-background-color: #C0392B; -fx-background-radius: 10;"));
-        plotBtn.setOnMouseExited(e -> plotBtn.setStyle("-fx-background-color: #E74C3C; -fx-background-radius: 10;"));
+        sidebar.getChildren().addAll(inputLabel, scrollPane, rangeLabel, rangeBox);
 
-        // সাইডবারে সব কিছু যোগ করা
-        sidebar.getChildren().addAll(inputLabel, equationInput, rangeLabel, rangeBox, plotBtn);
 
-        // ================= CENTER (ডান পাশ - গ্রাফ এরিয়া) =================
+        // ---------------- GRAPH AREA ----------------
         Pane graphPane = new Pane();
-        graphPane.setStyle("-fx-background-color: #ECF0F1;"); // হালকা ধূসর ব্যাকগ্রাউন্ড (গ্রাফের জন্য)
+        // আপনার দেওয়া গ্রাফ প্যান স্টাইল
+        graphPane.setStyle(
+                "-fx-background-color: #ECF0F1; " +
+                        "-fx-border-color: Purple; " +
+                        "-fx-border-width: 4px; " +
+                        "-fx-border-style: solid inside;"
+        );
 
-        // আপাতত একটা প্লেসহোল্ডার টেক্সট (পরে তোমার ফ্রেন্ড এখানে গ্রাফ বসাবে)
         Label placeholder = new Label("Graph will appear here...");
         placeholder.setFont(Font.font("Segoe UI", 20));
         placeholder.setTextFill(Color.GRAY);
-        // টেক্সট মাঝখানে আনা (একটু ট্রিকি Pane এর জন্য)
+
         placeholder.layoutXProperty().bind(graphPane.widthProperty().subtract(placeholder.widthProperty()).divide(2));
         placeholder.layoutYProperty().bind(graphPane.heightProperty().subtract(placeholder.heightProperty()).divide(2));
 
         graphPane.getChildren().add(placeholder);
 
-        // ================= LAYOUT SETTING =================
         root.setLeft(sidebar);
         root.setCenter(graphPane);
 
-        // বাটনের কাজ (অ্যাকশন)
-        plotBtn.setOnAction(e -> {
-            String eqn = equationInput.getText();
-            System.out.println("User wants to plot: " + eqn);
-            // এখানেই পরে তোমার ফ্রেন্ডের লজিক কল করা হবে!
-            // FriendClass.drawGraph(graphPane, eqn);
-        });
-
-        return new Scene(root, 1000, 700); // নতুন সিনের সাইজ একটু বড় দিলাম
+        return new Scene(root, 1000, 700);
     }
 
+    // =========================================================
+    // HELPER METHOD: ডাইনামিক এবং স্টাইলিশ ইনপুট বক্স তৈরি করা
+    // =========================================================
+    private void addFunctionInputBox(VBox container) {
+        TextField inputBox = new TextField();
+        inputBox.setPromptText("y = ...");
+        inputBox.setPrefHeight(60); // আপনার হাইট
+        inputBox.setPadding(new Insets(5, 10, 5, 10));
+
+        // 🔥 আপনার স্পেশাল স্টাইল কোড এখানেই বসানো হয়েছে 🔥
+        inputBox.setStyle(
+                "-fx-background-color: White; " +
+                        "-fx-background-radius: 10; " +
+                        "-fx-border-color: #9D00FF; " +  // সেই বেগুনি বর্ডার
+                        "-fx-border-width: 3; " +        // ৫ পিক্সেল বর্ডার
+                        "-fx-border-radius: 10; " +
+                        "-fx-text-fill: black; " +
+                        "-fx-font-size: 15px; " +
+                        "-fx-font-family: 'Verdana'; " + // ভারদানা ফন্ট
+                        "-fx-font-weight: bold;"
+        );
+
+        // লাইভ ডেটা লিসেনার (টাইপ করার সাথে সাথে ভ্যালু পাওয়া যাবে)
+        inputBox.textProperty().addListener((obs, oldVal, newVal) -> {
+            System.out.println("Input Updated: " + newVal);
+            // এখানেই পরে গ্রাফ আঁকার মেথড কল হবে
+        });
+
+        // ENTER KEY লজিক
+        inputBox.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                int index = container.getChildren().indexOf(inputBox);
+
+                // যদি এটা শেষ বক্স হয়, নতুন বক্স বানাবে
+                if (index == container.getChildren().size() - 1) {
+                    addFunctionInputBox(container);
+                }
+
+                // পরের বক্সে ফোকাস নিয়ে যাবে
+                if (index + 1 < container.getChildren().size()) {
+                    container.getChildren().get(index + 1).requestFocus();
+                }
+            }
+        });
+
+        container.getChildren().add(inputBox);
+        // নতুন বক্স তৈরি হলে সেটাতে অটো ফোকাস যাবে
+        inputBox.requestFocus();
+    }
     public static void main(String[] args) {
         launch();
     }
