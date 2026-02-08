@@ -190,7 +190,7 @@ public class MainApp extends Application {
         functionContainer.setStyle("-fx-background-color: transparent;");
 
         // ২. শুরুতে ৩টা বা ৫টা ফাঁকা ইনপুট বক্স দিয়ে দিই
-        for(int i=0; i<3; i++) {
+        for(int i=0; i<5; i++) {
             addFunctionInputBox(functionContainer);
         }
 
@@ -267,7 +267,7 @@ public class MainApp extends Application {
                         "-fx-background-radius: 10; " +
                         "-fx-border-color: #9D00FF; " +  // সেই বেগুনি বর্ডার
                         "-fx-border-width: 3; " +        // ৫ পিক্সেল বর্ডার
-                        "-fx-border-radius: 10; " +
+                        "-fx-border-radius: 8; " +
                         "-fx-text-fill: black; " +
                         "-fx-font-size: 15px; " +
                         "-fx-font-family: 'Verdana'; " + // ভারদানা ফন্ট
