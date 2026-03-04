@@ -616,18 +616,28 @@ public class GraphRenderer {
         Expression expr = EquationHandler.buildExpression(function, "x", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
+        double lastScreenY = 0;
+        double clipMargin = Math.max(10000, height * 10);
         for (double screenX = 0; screenX < width; screenX++) {
             double mathX = (screenX - cx) / appState.getScale();
             expr.setVariable("x", mathX);
             double mathY;
-            try { mathY = expr.evaluate(); } catch (Exception e) { continue; }
+            try { mathY = expr.evaluate(); } catch (Exception e) { first = true; continue; }
 
             if (Double.isNaN(mathY) || Double.isInfinite(mathY)) { first = true; continue; }
             double screenY = cy - (mathY * appState.getScale());
 
-            if (screenY < -500 || screenY > height + 500) { first = true; continue; }
+            if (screenY < -clipMargin || screenY > height + clipMargin) { first = true; continue; }
+
+            if (!first && Math.abs(screenY - lastScreenY) > height * 3) {
+                gc.moveTo(screenX, screenY);
+                lastScreenY = screenY;
+                continue;
+            }
+
             if (first) { gc.moveTo(screenX, screenY); first = false; }
             else { gc.lineTo(screenX, screenY); }
+            lastScreenY = screenY;
         }
         gc.stroke();
     }
@@ -636,18 +646,28 @@ public class GraphRenderer {
         Expression expr = EquationHandler.buildExpression(function, "y", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
+        double lastScreenX = 0;
+        double clipMargin = Math.max(10000, width * 10);
         for (double screenY = 0; screenY < height; screenY++) {
             double mathY = (cy - screenY) / appState.getScale();
             expr.setVariable("y", mathY);
             double mathX;
-            try { mathX = expr.evaluate(); } catch (Exception e) { continue; }
+            try { mathX = expr.evaluate(); } catch (Exception e) { first = true; continue; }
 
             if (Double.isNaN(mathX) || Double.isInfinite(mathX)) { first = true; continue; }
             double screenX = cx + (mathX * appState.getScale());
 
-            if (screenX < -500 || screenX > width + 500) { first = true; continue; }
+            if (screenX < -clipMargin || screenX > width + clipMargin) { first = true; continue; }
+
+            if (!first && Math.abs(screenX - lastScreenX) > width * 3) {
+                gc.moveTo(screenX, screenY);
+                lastScreenX = screenX;
+                continue;
+            }
+
             if (first) { gc.moveTo(screenX, screenY); first = false; }
             else { gc.lineTo(screenX, screenY); }
+            lastScreenX = screenX;
         }
         gc.stroke();
     }

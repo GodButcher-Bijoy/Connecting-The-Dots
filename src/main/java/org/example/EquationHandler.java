@@ -17,14 +17,31 @@ public class EquationHandler {
     // "2x" কে "2*x" এ কনভার্ট করার লজিক
     public static String formatEquation(String eqStr) {
         String eq = eqStr.toLowerCase().replace(" ", "");
-        return eq.replaceAll("(\\d)([a-z])", "$1*$2");
+        eq = eq.replaceAll("(\\d)([a-zA-Z])", "$1*$2");
+        eq = eq.replaceAll("(\\d)\\(", "$1*(");
+        eq = eq.replaceAll("\\)(\\d)", ")*$1");
+        eq = eq.replaceAll("\\)\\(", ")*(");
+        return eq;
     }
 
     // ইকুয়েশন থেকে স্লাইডারের জন্য ভেরিয়েবল (a, b, c ইত্যাদি) বের করার লজিক
+    // List of known function names to strip before scanning for variables (longest first to avoid partial matches)
+    private static final String[] FUNCTION_NAMES = {
+        "log10", "sqrt", "asin", "acos", "atan", "sinh", "cosh", "tanh", "log2",
+        "sin", "cos", "tan", "log", "abs", "exp"
+    };
+
     public static Set<String> extractVariables(String eq) {
         Set<String> foundVars = new HashSet<>();
-        Pattern p = Pattern.compile("[A-z]");
-        Matcher m = p.matcher(eq);
+
+        // Strip known function names so their letters are not picked up as variables
+        String stripped = eq.toLowerCase();
+        for (String fn : FUNCTION_NAMES) {
+            stripped = stripped.replace(fn, "");
+        }
+
+        Pattern p = Pattern.compile("[a-zA-Z]");
+        Matcher m = p.matcher(stripped);
 
         while (m.find()) {
             String var = m.group();
