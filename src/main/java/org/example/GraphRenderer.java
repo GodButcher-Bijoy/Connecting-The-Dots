@@ -626,18 +626,30 @@ public class GraphRenderer {
         Expression expr = EquationHandler.buildExpression(function, "x", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
+        double prevMathY = 0;
+        double prevScreenY = 0;
         for (double screenX = 0; screenX < width; screenX++) {
             double mathX = (screenX - cx) / appState.getScale();
             expr.setVariable("x", mathX);
             double mathY;
-            try { mathY = expr.evaluate(); } catch (Exception e) { continue; }
+            try { mathY = expr.evaluate(); } catch (Exception e) { first = true; continue; }
 
             if (Double.isNaN(mathY) || Double.isInfinite(mathY)) { first = true; continue; }
             double screenY = cy - (mathY * appState.getScale());
 
             if (screenY < -500 || screenY > height + 500) { first = true; continue; }
-            if (first) { gc.moveTo(screenX, screenY); first = false; }
-            else { gc.lineTo(screenX, screenY); }
+
+            // Asymptote detection: sign change with large screen jump indicates asymptote
+            if (!first && prevMathY * mathY < 0 && Math.abs(screenY - prevScreenY) > height / 4) {
+                gc.moveTo(screenX, screenY); // lift pen to avoid drawing through asymptote
+            } else if (first) {
+                gc.moveTo(screenX, screenY);
+                first = false;
+            } else {
+                gc.lineTo(screenX, screenY);
+            }
+            prevMathY = mathY;
+            prevScreenY = screenY;
         }
         gc.stroke();
     }
@@ -646,18 +658,30 @@ public class GraphRenderer {
         Expression expr = EquationHandler.buildExpression(function, "y", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
+        double prevMathX = 0;
+        double prevScreenX = 0;
         for (double screenY = 0; screenY < height; screenY++) {
             double mathY = (cy - screenY) / appState.getScale();
             expr.setVariable("y", mathY);
             double mathX;
-            try { mathX = expr.evaluate(); } catch (Exception e) { continue; }
+            try { mathX = expr.evaluate(); } catch (Exception e) { first = true; continue; }
 
             if (Double.isNaN(mathX) || Double.isInfinite(mathX)) { first = true; continue; }
             double screenX = cx + (mathX * appState.getScale());
 
             if (screenX < -500 || screenX > width + 500) { first = true; continue; }
-            if (first) { gc.moveTo(screenX, screenY); first = false; }
-            else { gc.lineTo(screenX, screenY); }
+
+            // Asymptote detection: sign change with large screen jump
+            if (!first && prevMathX * mathX < 0 && Math.abs(screenX - prevScreenX) > width / 4) {
+                gc.moveTo(screenX, screenY); // lift pen
+            } else if (first) {
+                gc.moveTo(screenX, screenY);
+                first = false;
+            } else {
+                gc.lineTo(screenX, screenY);
+            }
+            prevMathX = mathX;
+            prevScreenX = screenX;
         }
         gc.stroke();
     }
