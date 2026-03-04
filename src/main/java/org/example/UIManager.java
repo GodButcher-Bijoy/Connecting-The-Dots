@@ -378,16 +378,10 @@ public class UIManager {
         valInput.focusedProperty().addListener((obs, o, n) -> { if(!n) updateRange.run(); });
 
         slider.valueProperty().addListener((obs, o, n) -> {
-            if (!slider.isValueChanging() && !valInput.isFocused()) {
-                valInput.setText(String.format("%.2f", n));
-                appState.getGlobalVariables().put(varName, n.doubleValue());
-                redrawCallback.run();
-            }
-        });
-
-        slider.valueProperty().addListener((obs, o, n) -> {
             appState.getGlobalVariables().put(varName, n.doubleValue());
-            valInput.setText(String.format("%.2f", n));
+            if (!valInput.isFocused()) {
+                valInput.setText(String.format("%.2f", n));
+            }
             redrawCallback.run();
         });
 
@@ -476,16 +470,24 @@ public class UIManager {
 
 
     private void focusTextFieldInRow(javafx.scene.Node row) {
-        if (row instanceof javafx.scene.layout.Pane) {
-            for (javafx.scene.Node child : ((javafx.scene.layout.Pane) row).getChildren()) {
-                if (child instanceof TextField) {
-                    TextField tf = (TextField) child;
-                    tf.requestFocus();
-                    // কার্সরটিকে টেক্সটের শেষে নিয়ে যাবে
-                    javafx.application.Platform.runLater(() -> tf.positionCaret(tf.getText().length()));
-                    break;
-                }
+        TextField tf = findFirstTextField(row);
+        if (tf != null) {
+            tf.requestFocus();
+            // কার্সরটিকে টেক্সটের শেষে নিয়ে যাবে
+            javafx.application.Platform.runLater(() -> tf.positionCaret(tf.getText().length()));
+        }
+    }
+
+    private TextField findFirstTextField(javafx.scene.Node node) {
+        if (node instanceof TextField) {
+            return (TextField) node;
+        }
+        if (node instanceof javafx.scene.Parent) {
+            for (javafx.scene.Node child : ((javafx.scene.Parent) node).getChildrenUnmodifiable()) {
+                TextField result = findFirstTextField(child);
+                if (result != null) return result;
             }
         }
+        return null;
     }
 }

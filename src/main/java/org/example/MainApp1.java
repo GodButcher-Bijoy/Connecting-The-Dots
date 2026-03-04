@@ -74,7 +74,7 @@ public class MainApp1 extends Application {
         // ৪. GraphRenderer তৈরি
         GraphRenderer graphRenderer = new GraphRenderer(appState, canvas, uiManager.getFunctionContainer());
         // GraphRenderer তৈরি হয়ে গেলে এবার অ্যাকশনটার ভেতরে আসল কমান্ড দিয়ে দিচ্ছি
-        redrawAction[0] = () -> graphRenderer.drawGraph();
+        redrawAction[0] = () -> graphRenderer.recalcIntersections();
         // ------------------------------------------------
         homeBtn.setOnAction(e -> {
             appState.setScale(40); // Tomar default scale

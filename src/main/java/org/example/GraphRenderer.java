@@ -24,6 +24,8 @@ public class GraphRenderer {
     // For panning (dragging) the graph
     private double lastMouseX;
     private double lastMouseY;
+    private boolean needsIntersectionRecalc = true;
+
 
     public GraphRenderer(AppState appState, Canvas canvas, VBox functionContainer) {
         this.appState = appState;
@@ -352,6 +354,11 @@ public class GraphRenderer {
             gc.fillText(label, screenX + 15, screenY - 4);
         }
     }
+    public void recalcIntersections() {
+        needsIntersectionRecalc = true;
+        drawGraph();
+    }
+
     public void drawGraph() {
         if (canvas == null || gc == null) return;
         double width = canvas.getWidth();
@@ -411,8 +418,11 @@ public class GraphRenderer {
         }
         // ৩. একদম শেষে নাম্বারগুলো আঁকবো (যাতে নাম্বার সবসময় গ্রাফ লাইনের উপরে থাকে)
         drawGridLabels(width, height);
-        calculateTemporaryPoints(width, height, centerX, centerY);
-        validatePinnedPoints();
+        if (needsIntersectionRecalc) {
+            calculateTemporaryPoints(width, height, centerX, centerY);
+            validatePinnedPoints();
+            needsIntersectionRecalc = false;
+        }
         drawPoints(centerX, centerY);
     }
 
