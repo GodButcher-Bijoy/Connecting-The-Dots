@@ -425,19 +425,8 @@ public class GraphRenderer {
         Color majorColor = Color.web("#999999");
         Color minorColor = Color.web("#E0E0E0");
 
-        double targetGridPixelWidth = 100;
-        double minStep = (width / scale) * (targetGridPixelWidth / width);
-        double magnitude = Math.pow(10, Math.floor(Math.log10(minStep)));
-        double residual = minStep / magnitude;
-
-        double majorStep;
-        if (residual > 5) majorStep = 10 * magnitude;
-        else if (residual > 2) majorStep = 5 * magnitude;
-        else if (residual > 1) majorStep = 2 * magnitude;
-        else majorStep = magnitude;
-
-        int subdivisions = (Math.abs(majorStep / magnitude - 2) < 0.001) ? 4 : 5;
-        double minorStep = majorStep / subdivisions;
+        double majorStep = computeMajorStep(width, scale);
+        double minorStep = majorStep / computeSubdivisions(majorStep);
 
         // Vertical Lines
         double startX = Math.floor(-centerX / scale / minorStep) * minorStep;
@@ -486,19 +475,8 @@ public class GraphRenderer {
         Color textColor = Color.web("#444444");
         Color bgWhite = Color.web("#FFFFFF", 0.85);
 
-        double targetGridPixelWidth = 100;
-        double minStep = (width / scale) * (targetGridPixelWidth / width);
-        double magnitude = Math.pow(10, Math.floor(Math.log10(minStep)));
-        double residual = minStep / magnitude;
-
-        double majorStep;
-        if (residual > 5) majorStep = 10 * magnitude;
-        else if (residual > 2) majorStep = 5 * magnitude;
-        else if (residual > 1) majorStep = 2 * magnitude;
-        else majorStep = magnitude;
-
-        int subdivisions = (Math.abs(majorStep / magnitude - 2) < 0.001) ? 4 : 5;
-        double minorStep = majorStep / subdivisions;
+        double majorStep = computeMajorStep(width, scale);
+        double minorStep = majorStep / computeSubdivisions(majorStep);
 
         // X-Axis Numbers
         double startX = Math.floor(-centerX / scale / minorStep) * minorStep;
@@ -555,6 +533,33 @@ public class GraphRenderer {
             gc.setFill(textColor);
             gc.fillText(label, zeroX, zeroY);
         }
+    }
+
+    /**
+     * Computes the major grid step size (in math units) for the given canvas width
+     * and scale. Targets a grid line roughly every {@code targetGridPixelWidth}
+     * pixels and rounds to a "nice" value (1, 2, 5, 10, …).
+     * Extracted to avoid duplicating this calculation in drawSmartGridLines() and
+     * drawGridLabels().
+     */
+    private double computeMajorStep(double width, double scale) {
+        double targetGridPixelWidth = 100;
+        double minStep = (width / scale) * (targetGridPixelWidth / width);
+        double magnitude = Math.pow(10, Math.floor(Math.log10(minStep)));
+        double residual = minStep / magnitude;
+        if (residual > 5) return 10 * magnitude;
+        else if (residual > 2) return 5 * magnitude;
+        else if (residual > 1) return 2 * magnitude;
+        else return magnitude;
+    }
+
+    /**
+     * Returns the number of minor-grid subdivisions for a given major step.
+     * "Nice" multiples of 2 use 4 subdivisions (0.5 sub-steps); all others use 5.
+     */
+    private int computeSubdivisions(double majorStep) {
+        double magnitude = Math.pow(10, Math.floor(Math.log10(majorStep)));
+        return (Math.abs(majorStep / magnitude - 2) < 0.001) ? 4 : 5;
     }
 
     private void drawAxes(double width, double height) {
@@ -659,6 +664,9 @@ public class GraphRenderer {
 
         Expression expr = EquationHandler.buildImplicitExpression(expressionStr, appState.getGlobalVariables());
 
+        // Pre-allocated once to avoid thousands of short-lived array objects per frame.
+        // hits[i][0] = x coordinate, hits[i][1] = y coordinate of the i-th intersection point.
+        double[][] hits = new double[4][2];
         int res = 4;
         for (double x = 0; x < width; x += res) {
             for (double y = 0; y < height; y += res) {
@@ -667,18 +675,17 @@ public class GraphRenderer {
                 double vTR = evaluate(expr, x + res, y, cx, cy, appState.getScale());
                 double vTL = evaluate(expr, x, y, cx, cy, appState.getScale());
 
-                double[][][] hits = new double[4][2][];
                 int hitCount = 0;
 
-                if (isSignDifferent(vBL, vTL)) hits[hitCount++] = new double[][]{{x, y + res - (-vBL / (vTL - vBL) * res)}};
-                if (isSignDifferent(vBL, vBR)) hits[hitCount++] = new double[][]{{x + (-vBL / (vBR - vBL) * res), y + res}};
-                if (isSignDifferent(vBR, vTR)) hits[hitCount++] = new double[][]{{x + res, y + res - (-vBR / (vTR - vBR) * res)}};
-                if (isSignDifferent(vTR, vTL)) hits[hitCount++] = new double[][]{{x + res - (-vTR / (vTL - vTR) * res), y}};
+                if (isSignDifferent(vBL, vTL)) { hits[hitCount][0] = x;       hits[hitCount][1] = y + res - (-vBL / (vTL - vBL) * res); hitCount++; }
+                if (isSignDifferent(vBL, vBR)) { hits[hitCount][0] = x + (-vBL / (vBR - vBL) * res); hits[hitCount][1] = y + res;       hitCount++; }
+                if (isSignDifferent(vBR, vTR)) { hits[hitCount][0] = x + res; hits[hitCount][1] = y + res - (-vBR / (vTR - vBR) * res); hitCount++; }
+                if (isSignDifferent(vTR, vTL)) { hits[hitCount][0] = x + res - (-vTR / (vTL - vTR) * res); hits[hitCount][1] = y;       hitCount++; }
 
-                if (hitCount == 2) gc.strokeLine(hits[0][0][0], hits[0][0][1], hits[1][0][0], hits[1][0][1]);
+                if (hitCount == 2) gc.strokeLine(hits[0][0], hits[0][1], hits[1][0], hits[1][1]);
                 else if (hitCount == 4) {
-                    gc.strokeLine(hits[0][0][0], hits[0][0][1], hits[1][0][0], hits[1][0][1]);
-                    gc.strokeLine(hits[2][0][0], hits[2][0][1], hits[3][0][0], hits[3][0][1]);
+                    gc.strokeLine(hits[0][0], hits[0][1], hits[1][0], hits[1][1]);
+                    gc.strokeLine(hits[2][0], hits[2][1], hits[3][0], hits[3][1]);
                 }
             }
         }

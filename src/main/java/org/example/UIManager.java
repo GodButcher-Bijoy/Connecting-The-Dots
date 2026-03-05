@@ -378,14 +378,6 @@ public class UIManager {
         valInput.focusedProperty().addListener((obs, o, n) -> { if(!n) updateRange.run(); });
 
         slider.valueProperty().addListener((obs, o, n) -> {
-            if (!slider.isValueChanging() && !valInput.isFocused()) {
-                valInput.setText(String.format("%.2f", n));
-                appState.getGlobalVariables().put(varName, n.doubleValue());
-                redrawCallback.run();
-            }
-        });
-
-        slider.valueProperty().addListener((obs, o, n) -> {
             appState.getGlobalVariables().put(varName, n.doubleValue());
             valInput.setText(String.format("%.2f", n));
             redrawCallback.run();

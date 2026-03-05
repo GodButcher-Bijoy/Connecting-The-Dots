@@ -14,6 +14,10 @@ public class EquationHandler {
 
     private static final Set<String> RESERVED_WORDS = Set.of("x", "y", "sin", "cos", "tan", "log", "sqrt", "abs", "pi", "e", "exp");
 
+    // Compiled once at class-load time; [a-zA-Z] avoids the [A-z] range
+    // that incorrectly included punctuation characters (ASCII 91-96).
+    private static final Pattern VAR_PATTERN = Pattern.compile("[a-zA-Z]");
+
     // "2x" কে "2*x" এ কনভার্ট করার লজিক
     public static String formatEquation(String eqStr) {
         String eq = eqStr.toLowerCase().replace(" ", "");
@@ -23,8 +27,7 @@ public class EquationHandler {
     // ইকুয়েশন থেকে স্লাইডারের জন্য ভেরিয়েবল (a, b, c ইত্যাদি) বের করার লজিক
     public static Set<String> extractVariables(String eq) {
         Set<String> foundVars = new HashSet<>();
-        Pattern p = Pattern.compile("[A-z]");
-        Matcher m = p.matcher(eq);
+        Matcher m = VAR_PATTERN.matcher(eq);
 
         while (m.find()) {
             String var = m.group();
