@@ -41,14 +41,25 @@ public class CollegeEquations extends EquationCategory {
         return new EquationPreset(
                 "NDC", "NDC college sign drawn with equations", 35.0,
                 // --- N ---
-                EquationEntry.of("x=-8{-1.5<=y<=1.5}",            "#003087"),
-                EquationEntry.of("y=-1.5*x-10.5{-8<=x<=-6}",      "#003087"),
-                EquationEntry.of("x=-6{-1.5<=y<=1.5}",            "#003087"),
+                EquationEntry.of("y = 0 {-3 <= x <= 3}",            "#fca90f"),
+                EquationEntry.of("y = 0.5 {-3 <= x <= 3}",      "#fca90f"),
+                EquationEntry.of("3>=x >= -3 {0 <= y <= 0.5}",            "#fca90f"),
                 // --- D ---
-                EquationEntry.of("x=-1{-1.5<=y<=1.5}",            "#1A5276"),
-                EquationEntry.of("(x+1)^2+y^2=2.25{x>=-1}",       "#1A5276"),
+                EquationEntry.of("x = 3 {0 <= y <= 0.5}",            "#fca90f"),
+                EquationEntry.of("y = -7*x - 20.5 {-3.5 <= x <= -3}",       "#fca90f"),
                 // --- C ---
-                EquationEntry.of("(x-6)^2+y^2=2.25{x<=6}",        "#0055A5")   // lighter blue C
+                EquationEntry.of("y = 7*x - 20.5 {3 <= x <= 3.5}",        "#fca90f"),
+                EquationEntry.of(".5<=y <= -x + 0.5 {-3.5 <= x <= -1.5,y >= -7*x - 20.5}",        "#fca90f"),
+                EquationEntry.of(".5<=y <= x + 0.5 {1.5 <= x <= 3.5, y >= 7*x - 20.5 }",        "#fca90f"),
+                EquationEntry.of("0.5<=y <= 2*x + 5 {-1.5 <= x <= 0}",        "#fca90f"),
+                EquationEntry.of("0.5<=y <= -2*x + 5 {0 <= x <= 1.5}",        "#fca90f"),
+                EquationEntry.of("x^2 + (y - 5.3)^2 <= 0.1",        "#fca90f"),
+                EquationEntry.of("(x + 3.5)^2 + (y - 4.3)^2 <= 0.1",        "#fca90f"),
+                EquationEntry.of("(x - 3.5)^2 + (y - 4.3)^2 <= 0.1",        "#fca90f"),
+                EquationEntry.of("x^2 + (y - 0.25)^2 <= 0.04",        "#54bf41"),
+                EquationEntry.of("(x - 1.5)^2 + (y - 0.25)^2 <= 0.04",        "#0000ff"),
+                EquationEntry.of("(x + 1.5)^2 + (y - 0.25)^2 <= 0.04",        "#0000ff"),
+                EquationEntry.of("x^2/.25+(y-2)^2/.5 <= 1",        "#ff0000")
         );
     }
 
@@ -74,16 +85,26 @@ public class CollegeEquations extends EquationCategory {
     // =========================================================================
     private EquationPreset vnc() {
         return new EquationPreset(
-                "VNC", "VNC college sign drawn with equations", 35.0,
-                // --- V ---
-                EquationEntry.of("y=-3*x-22.5{-8<=x<=-7}",        "#117A65"),
-                EquationEntry.of("y=3*x+19.5{-7<=x<=-6}",         "#117A65"),
-                // --- N ---
-                EquationEntry.of("x=-1{-1.5<=y<=1.5}",            "#1E8449"),
-                EquationEntry.of("y=-1.5*x{-1<=x<=1}",            "#1E8449"),
-                EquationEntry.of("x=1{-1.5<=y<=1.5}",             "#1E8449"),
-                // --- C ---
-                EquationEntry.of("(x-7)^2+y^2=2.25{x<=7}",        "#27AE60")
+                "VNC", "VNC college sign drawn with equations", 20.0,
+                EquationEntry.of("y=-x+16{12<y<13}",            "#27AE60"),
+                EquationEntry.of("x=4{8<y<12}",            "#27AE60"),
+                EquationEntry.of("y=-x+6{1<x<2}",             "#27AE60"),
+                EquationEntry.of("y=x+14{11<y<13}",        "#27AE60"),
+                EquationEntry.of("y=13{-1<x<3}",        "#27AE60"),
+                EquationEntry.of("y=x+4{1<x<4}",        "#27AE60"),
+                EquationEntry.of("x=-2{4<y<6}",        "#27AE60"),
+                EquationEntry.of("y=x+8{-2<x<1}",        "#27AE60"),
+                EquationEntry.of("y=10{-2<x<1}",        "#27AE60"),
+                EquationEntry.of("y=-x+8{10<y<11}",        "#27AE60"),
+                EquationEntry.of("x=1{9<y<10}",        "#27AE60"),
+                EquationEntry.of("(x-1)^2/.75+(y-11.5)^2/.25<=1",        "#f74402"),
+                EquationEntry.of("(x-1)^2/.03+(y-11.5)^2/.25<=1",        "#000000"),
+                EquationEntry.of("x^2/33 + (y-3.8)^2/3.25 = 1 {y <= 5.5}","#27AE60"),
+                EquationEntry.of("x^2/50 + (y-1.5)^2/5 = 1 {y <= 3}",        "#27AE60"),
+                EquationEntry.of("x^2/68 + (y+1)^2/5= 1 {y <= .5}",        "#27AE60"),
+                EquationEntry.of("y=11{-4<x<-3}",        "#000000"),
+                EquationEntry.of("y=-x+7{-4.5<x<-4}",        "#000000"),
+                EquationEntry.of("y=x+15{-4.5<x<-4}",        "#000000")
         );
     }
 

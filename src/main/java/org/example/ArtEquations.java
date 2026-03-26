@@ -77,12 +77,14 @@ public class ArtEquations extends EquationCategory {
     // Serpentine  y = x/(x²+1)
     private EquationPreset Yin_Yang_simble() {
         return new EquationPreset(
-                "Yin_Yang_simble ࿊", "Yin_Yang_simble curve)", 95.0,
-                EquationEntry.of("4.74^2 = (x-0)^2 + (y-0)^2", "#000000"),
-                EquationEntry.of(".6^2 = (x-0)^2 + (y-2.4)^2", "#000000"),
+                "Yin_Yang_simble ࿊", "Yin_Yang_simble curve)", 55.0,
+                EquationEntry.of("4.74^2 >= (x-0)^2 + (y-0)^2{2.37^2 <= (x-0)^2 + (y-2.37)^2,0<=x,.6^2 <= (x-0)^2 + (y+2.4)^2}", "#000000"),
+                EquationEntry.of(".6^2 >= (x-0)^2 + (y-2.4)^2", "#000000"),
                 EquationEntry.of(".6^2 = (x-0)^2 + (y+2.4)^2", "#000000"),
                 EquationEntry.of("2.37^2 = (x-0)^2 + (y-2.37)^2{x>0}", "#000000"),
-                EquationEntry.of("2.37^2 = (x-0)^2 + (y+2.37)^2{x<0}", "#000000")
+                EquationEntry.of("2.37^2 = (x-0)^2 + (y+2.37)^2{x<0}", "#000000"),
+                EquationEntry.of("4.74^2 >= (x-0)^2 + (y-0)^2{2.37^2 >= (x-0)^2 + (y+2.37)^2,-2.37<=x<=0,.6^2 <= (x-0)^2 + (y+2.4)^2}", "#000000"),
+                EquationEntry.of("4.74^2 = (x-0)^2 + (y-0)^2", "#000000")
         );
     }
 
