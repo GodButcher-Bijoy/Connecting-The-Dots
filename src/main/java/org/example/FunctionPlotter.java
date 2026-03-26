@@ -285,7 +285,7 @@ public class FunctionPlotter {
             Expression expr1 = EquationHandler.buildImplicitExpression(diffStr1, appState.getGlobalVariables());
             Expression expr2 = EquationHandler.buildImplicitExpression(diffStr2, appState.getGlobalVariables());
 
-            Color shadeColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 0.20);
+            Color shadeColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 0.50);
             gc.setFill(shadeColor);
 
             int res = 3;
