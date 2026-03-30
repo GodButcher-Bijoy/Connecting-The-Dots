@@ -126,6 +126,18 @@ public class GraphRenderer {
                     }
                 }
 
+                // ─── POLAR equation  r = f(t)  ──────────────────────────────────
+                // Convert  r=expr  to parametric (expr*cos(t), expr*sin(t))
+                // Lowercase check handles both "r=" and "R="
+                String eqLower = eqStr.toLowerCase();
+                if (eqLower.startsWith("r=")) {
+                    String rExpr = eqStr.substring(2); // expression after "r="
+                    String xEq = "(" + rExpr + ")*cos(t)";
+                    String yEq = "(" + rExpr + ")*sin(t)";
+                    functionPlotter.plotParametric(xEq, yEq, rowColor, centerX, centerY, width, height, boundary);
+                    continue;
+                }
+
                 if (eqStr.startsWith("(") && eqStr.endsWith(")")) {
                     try {
                         String[] parts = eqStr.substring(1, eqStr.length() - 1).split(",");
