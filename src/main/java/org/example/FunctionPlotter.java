@@ -417,7 +417,9 @@ public class FunctionPlotter {
 
         private Expression buildExpr(String e, Map<String, Double> globals) {
             try {
-                ExpressionBuilder builder = new ExpressionBuilder(e).variables("x", "y", "t");
+                ExpressionBuilder builder = EquationHandler.withCustomFunctions(
+                        new ExpressionBuilder(e).variables("x", "y", "t")
+                );
                 for (String k : globals.keySet()) builder.variable(k);
                 Expression expr = builder.build();
                 for (Map.Entry<String, Double> entry : globals.entrySet()) {

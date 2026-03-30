@@ -73,12 +73,12 @@ public class CartoonEquations extends EquationCategory {
         return new EquationPreset(
                 "Pikachu 😊", "Pikachu face outline with ears and cheeks", 45.0,
                 EquationEntry.of("x^2/12 + y^2/11 <= 1",                            "#FFD700"), // head (yellow)
-                EquationEntry.of("y = -4.5*x - 12 {-4 <= x <= -3.03}",                  "#000000"), // left ear (black)
-                EquationEntry.of("y = -1.2*x + 1.2 {-4 <= x <= -1.5}",                  "#000000"),
-                EquationEntry.of("y = 4.5 {-3.66 <= x <= -2.75}",                        "#000000"),
-                EquationEntry.of("y = 4.5*x - 12 {3.03 <= x <= 4}",                     "#000000"), // right ear (black)
-                EquationEntry.of("y = 1.2*x + 1.2 {1.5 <= x <= 4}",                   "#000000"),
-                EquationEntry.of("y = 4.5 {2.75 <= x <= 3.66}",            "#000000"), // right eye
+                EquationEntry.of("(y-10)^2 = 18*x + 110 {2.12<=y<=6.88}",                  "#000000"), // left ear (black)
+                EquationEntry.of("(y-1)^2 = -8*x - 10 {2.89<=y<=6.88}",                  "#000000"),
+                EquationEntry.of("(x+3)^2+(y-5.1)^2/5 = 1{y<=5.66,x<=-3.5}",                        "#000000"),
+                EquationEntry.of("-(y-7)^2= 4.5*x - 37 {2.03<=y<=4.92}",                     "#000000"), // right ear (black)
+                EquationEntry.of("(y-2.2)^2 = 1.2*x - 1.3{2.96<=y<=4.91}",                   "#000000"),
+                EquationEntry.of("(x-3)^2/5+(y-4.1)^2/3 = 1{x>=4.8,y<=4.42}",            "#000000"), // right eye
                 EquationEntry.of("(x+1.5)^2 + (y-0.5)^2 <= 0.3",            "#000000"), // left eye
                 EquationEntry.of("(x-1.5)^2 + (y-0.5)^2 <= 0.3",        "#000000"), // right cheek (red)
                 EquationEntry.of("(x+1.3)^2 + (y-0.7)^2 <= 0.03",        "#FFFFFF"), // left cheek (red)

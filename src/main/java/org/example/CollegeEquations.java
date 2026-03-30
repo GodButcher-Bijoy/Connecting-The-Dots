@@ -68,15 +68,24 @@ public class CollegeEquations extends EquationCategory {
     // =========================================================================
     private EquationPreset hcc() {
         return new EquationPreset(
-                "HCC", "HCC college sign drawn with equations", 35.0,
+                "HCC", "HCC college sign drawn with equations", 55.0,
                 // --- H ---
-                EquationEntry.of("x=-8{-1.5<=y<=1.5}",            "#8B0000"),
-                EquationEntry.of("y=0{-8<=x<=-6}",                "#A52A2A"),
-                EquationEntry.of("x=-6{-1.5<=y<=1.5}",            "#8B0000"),
-                // --- C1 ---
-                EquationEntry.of("x^2+y^2=2.25{x<=0}",            "#C0392B"),
-                // --- C2 ---
-                EquationEntry.of("(x-7)^2+y^2=2.25{x<=7}",        "#C0392B")
+                EquationEntry.of("x^2/(5^2)+(y+1.2)^2/(2^2)>= 1{0<=y,x^2/(5^2)+(y+1.8)^2/(3^2)<= 1}","#fc9403"),
+                EquationEntry.of("x^2/(5^2)+(y+1.8)^2/(3^2)= 1{0<=y}","#fc9403"),
+                EquationEntry.of("(y-2)^2 = 4.9x+4{1.2<=y<=4}","#fc9403"),
+                EquationEntry.of("-(y-2)^2 = 4.9x-4{1.2<=y<=4}","#fc9403"),
+                EquationEntry.of("(y-2)^2 <= 4.9x+6{1.15<=y<=4.45,(y-2)^2 >= 4.9x+4,x<0}","#fc9403"),
+                EquationEntry.of("-(y-2)^2 >= 4.9x-6{1.15<=y<=4.45,-(y-2)^2 <= 4.9x-4,x>0}","#fc9403"),
+                EquationEntry.of("(x-y+3)^2/2^2+(x+y-.1)^2/1.5^2 <= 1{.87<=y,x<=-1.14,(x-y+2.4)^2/2^2+(x+y-.1)^2/1.5^2 >= 1}","#fc9403"),
+                EquationEntry.of("(x-y+2.4)^2/2^2+(x+y-.1)^2/1.5^2 = 1{x<=-1.18,y>=.89}","#fc9403"),
+                EquationEntry.of("(-x-y+3)^2/2^2+(-x+y-.1)^2/1.5^2 <= 1{.87<=y,x>=1.14,(-x-y+2.4)^2/2^2+(-x+y-.1)^2/1.5^2 >= 1}","#fc9403"),
+                EquationEntry.of("(-x-y+2.4)^2/2^2+(-x+y-.1)^2/1.5^2 = 1{x>=1.18,y>=.89}","#fc9403"),
+                EquationEntry.of("(x+3)^2+(y-1)^2=.3{x^2/(5^2)+(y+1.8)^2/(3^2)>= 1,x<=-2.58}","#fc9403"),
+                EquationEntry.of("(x+3)^2+(y-1)^2<=.8{x^2/(5^2)+(y+1.8)^2/(3^2)>= 1,x<=-2.63,(x+3)^2+(y-1)^2>=.3}","#fc9403"),
+                EquationEntry.of("(-x+3)^2+(y-1)^2<=.8{x^2/(5^2)+(y+1.8)^2/(3^2)>= 1,x>=2.69,(-x+3)^2+(y-1)^2>=.3}","#fc9403"),
+                EquationEntry.of("(-x+3)^2+(y-1)^2=.3{x^2/(5^2)+(y+1.8)^2/(3^2)>= 1,x>=2.58}","#fc9403"),
+                EquationEntry.of(".5x^2 + (y - 1.9 - sqrt(abs(.5x)))^2 <= 0.3","#ed15b4"),
+                EquationEntry.of(".3x^2 + (y - 1.9 - sqrt(abs(.5x)))^2 <= 0.3{.5x^2 + (y - 1.9 - sqrt(abs(.5x)))^2 >= 0.3}","#fc9403")
         );
     }
 
