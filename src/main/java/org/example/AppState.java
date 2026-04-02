@@ -14,6 +14,12 @@ public class AppState {
     private double scale = 40; // Pixels per unit
     private double offsetX = 0;
     private double offsetY = 0;
+    // --- NEW: Graph Mode Tracking ---
+    public enum GraphMode { STANDARD, POLAR }
+    private GraphMode graphMode = GraphMode.STANDARD;
+
+    public GraphMode getGraphMode() { return graphMode; }
+    public void setGraphMode(GraphMode graphMode) { this.graphMode = graphMode; }
 
     // --- NEW: Intersection Tracking ---
     // 1. Tracks which equation's input box is currently active (-1 means none)
