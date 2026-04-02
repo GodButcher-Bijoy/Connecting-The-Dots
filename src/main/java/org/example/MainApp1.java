@@ -2,30 +2,28 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 public class MainApp1 extends Application {
 
+    private Stage mainStage;
+
     @Override
     public void start(Stage stage) {
-        Scene introScene = IntroScene.create(stage, () -> {
-            // Notun scene na toiri kore, just bhitorer ui (root) ta nilam
-            BorderPane mainRoot = createMainUI();
+        this.mainStage = stage;
 
-            // Current scene-er content ta ek sec-e replace kore dilam!
-            stage.getScene().setRoot(mainRoot);
+        Scene introScene = IntroScene.create(stage, () -> {
+            // After Intro finishes, go to Selection Screen
+            showSelectionScreen();
         });
 
         stage.setTitle("Graphify");
@@ -33,7 +31,50 @@ public class MainApp1 extends Application {
         stage.show();
     }
 
-    private BorderPane createMainUI() {
+    private void showSelectionScreen() {
+        Parent selectionRoot = SelectionScene.createView(
+                () -> launchMainUI(AppState.GraphMode.STANDARD, null), // Clicked Standard
+                () -> launchMainUI(AppState.GraphMode.POLAR, null),    // Clicked Polar
+                () -> showLibraryScreen()                              // Clicked Experience Curves
+        );
+        mainStage.getScene().setRoot(selectionRoot);
+    }
+
+    private void showLibraryScreen() {
+        Parent libraryRoot = LibraryScene.createView(
+                () -> showSelectionScreen(), // Back button pressed
+                (preset) -> launchMainUI(AppState.GraphMode.STANDARD, preset) // Preset clicked
+        );
+        mainStage.getScene().setRoot(libraryRoot);
+    }
+
+    private void launchMainUI(AppState.GraphMode mode, EquationPreset presetToLoad) {
+        // Create your existing Main UI and pass the preset to load it
+        BorderPane mainRoot = createMainUI(presetToLoad);
+
+        // Clean, floating arrow back button (Matching LibraryScene)
+        Button backBtn = new Button("\uD83C\uDFE0");
+        String normalStyle = "-fx-font-size: 30px; -fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 0 10 0 10;";
+        String hoverStyle = "-fx-font-size: 30px; -fx-background-color: #222222; -fx-text-fill: #9D00FF; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 0 10 0 10;";
+
+        backBtn.setStyle(normalStyle);
+        backBtn.setOnAction(e -> showSelectionScreen());
+
+        // 🟢 THESE TWO LINES WERE MISSING! They trigger the hover effect.
+        backBtn.setOnMouseEntered(e -> backBtn.setStyle(hoverStyle));
+        backBtn.setOnMouseExited(e -> backBtn.setStyle(normalStyle));
+
+        // Overlay the back button on top of your main UI using StackPane
+        StackPane wrapper = new StackPane(mainRoot);
+        StackPane.setAlignment(backBtn, Pos.TOP_LEFT);
+        StackPane.setMargin(backBtn, new Insets(10, 15, 15, 15)); // Adjusted slightly for the larger font
+        wrapper.getChildren().add(backBtn);
+
+        // Swap the scene root
+        mainStage.getScene().setRoot(wrapper);
+    }
+
+    private BorderPane createMainUI(EquationPreset presetToLoad) {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #333333;");
 
@@ -66,7 +107,7 @@ public class MainApp1 extends Application {
         StackPane.setAlignment(homeBtn, Pos.TOP_RIGHT);
         StackPane.setMargin(homeBtn, new Insets(15));
 
-        // ── Library button (top-left) ────────────────────────────────────────
+        // ── Library button (top-left of the graph area) ──────────────────────
         Button libraryBtn = new Button("📚 Library ▾");
         libraryBtn.setStyle(
                 "-fx-background-color: #9D00FF; -fx-text-fill: white; -fx-font-weight: bold; " +
@@ -110,6 +151,11 @@ public class MainApp1 extends Application {
 
         root.setLeft(uiManager.createSidebar());
         root.setCenter(centerWrapper);
+
+        // If a preset was selected from the new Library Screen, load it!
+        if (presetToLoad != null) {
+            uiManager.loadPreset(presetToLoad);
+        }
 
         graphRenderer.drawGraph();
         return root;
