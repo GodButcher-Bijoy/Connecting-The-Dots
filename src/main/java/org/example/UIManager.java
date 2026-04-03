@@ -33,31 +33,38 @@ public class UIManager {
     public VBox getFunctionContainer() {
         return functionContainer;
     }
-
-    public HBox createSidebar() {
-        // ১. মূল সাইডবার সেটআপ
+    public HBox createSidebar(Button libraryBtn) {
         VBox sidebar = new VBox(15);
         sidebar.setPadding(new Insets(30, 20, 30, 20));
         sidebar.setPrefWidth(400);
-        sidebar.setMinWidth(400); // ⚠️ Important: স্লাইড হওয়ার সময় কন্টেন্ট চ্যাপ্টা হওয়া আটকাবে
+        sidebar.setMinWidth(400);
         sidebar.setAlignment(Pos.TOP_CENTER);
-        sidebar.setStyle("-fx-background-color: #121212; -fx-background-radius: 20;-fx-border-color: Purple; -fx-border-width: 4px;-fx-border-radius:15;-fx-border-style: solid inside;");// ডানপাশে হালকা বর্ডার
 
-        Label inputLabel = new Label("Enter Functions:");
+        sidebar.setStyle("-fx-background-color: #121212; -fx-background-radius: 0 20 20 0;");
+        javafx.scene.effect.DropShadow sidebarGlow = new javafx.scene.effect.DropShadow();
+        sidebarGlow.setRadius(30);
+        sidebarGlow.setOffsetX(8);
+        sidebarGlow.setColor(Color.web("#9D00FF", 0.5));
+        sidebar.setEffect(sidebarGlow);
+
+        // --- Shudhu Library button sidebar e thakbe ---
+        HBox topButtons = new HBox(libraryBtn);
+        topButtons.setAlignment(Pos.CENTER);
+        VBox.setMargin(topButtons, new Insets(0, 0, 10, 0));
+
+        Label inputLabel = new Label(" ");
         inputLabel.setTextFill(Color.DEEPPINK);
         inputLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
 
         addFunctionInputBox(0);
 
         scrollPane = new ScrollPane(functionContainer);
-        VBox.setMargin(scrollPane, new Insets(20, 0, 0, 0));
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Black & Grey Scrollbar CSS Magic
         String css = ".scroll-pane { -fx-background: transparent; -fx-background-color: transparent; } " +
-                ".scroll-bar:vertical { -fx-background-color: #121212; } " +
-                ".scroll-bar:vertical .track { -fx-background-color: #1A1A1A; -fx-border-color: transparent; } " +
+                ".scroll-bar:vertical { -fx-background-color: transparent; } " +
+                ".scroll-bar:vertical .track { -fx-background-color: transparent; -fx-border-color: transparent; } " +
                 ".scroll-bar:vertical .thumb { -fx-background-color: #555555; -fx-background-radius: 5; } " +
                 ".scroll-bar:vertical .thumb:hover { -fx-background-color: #777777; } " +
                 ".scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-background-color: transparent; -fx-padding: 0; } " +
@@ -66,10 +73,21 @@ public class UIManager {
         String b64Css = "data:text/css;base64," + java.util.Base64.getEncoder().encodeToString(css.getBytes());
         scrollPane.getStylesheets().add(b64Css);
 
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
-        sidebar.getChildren().addAll(inputLabel, scrollPane);
+        VBox floatingBoxContainer = new VBox(scrollPane);
+        floatingBoxContainer.setStyle("-fx-background-color: #1A1A1A; -fx-border-color: #00FFFF; -fx-border-width: 4px; -fx-border-radius: 12px; -fx-background-radius: 20px;");
+        floatingBoxContainer.setPadding(new Insets(15, 0, 15, 0));
 
-        // ২. স্লাইডিং মেকানিজম এবং ক্লিপিং মাস্ক
+        javafx.scene.effect.DropShadow containerShadow = new javafx.scene.effect.DropShadow();
+        containerShadow.setRadius(25);
+        containerShadow.setSpread(0.2);
+        containerShadow.setColor(Color.web("#00FFFF", 0.6));
+        floatingBoxContainer.setEffect(containerShadow);
+
+        VBox.setVgrow(floatingBoxContainer, Priority.ALWAYS);
+
+        // Top button sidebar er children e add kora holo
+        sidebar.getChildren().addAll(topButtons, inputLabel, floatingBoxContainer);
+
         Pane slideContainer = new Pane(sidebar);
         slideContainer.setPrefWidth(400);
         slideContainer.setMinWidth(0);
@@ -81,41 +99,41 @@ public class UIManager {
 
         sidebar.prefHeightProperty().bind(slideContainer.heightProperty());
 
-        // --- NEW: টগল (Toggle) বাটন (Updated Design) ---
-        // আইকন: << (ডাবল শেভরন লেফট), কালার: গ্রে (#AAAAAA)
         Button toggleBtn = createIconButton("M17.59 7.41L16.17 6l-6 6 6 6 1.41-1.41L13 12l4.59-4.59zM11.59 7.41L10.17 6l-6 6 6 6 1.41-1.41L7 12l4.59-4.59z", "#AAAAAA", 24);
 
-        // বেস স্টাইল (কালো ব্যাকগ্রাউন্ড, ডানদিকে রাউন্ড কর্নার)
         String baseStyle = "-fx-background-color: #111111; -fx-background-radius: 0 8 8 0; -fx-cursor: hand; -fx-border-color: #333333; -fx-border-width: 1 1 1 0; -fx-border-radius: 0 8 8 0;";
-        // হোভার স্টাইল (একটু উজ্জ্বল কালো)
         String hoverStyle = "-fx-background-color: #252525; -fx-background-radius: 0 8 8 0; -fx-cursor: hand; -fx-border-color: #444444; -fx-border-width: 1 1 1 0; -fx-border-radius: 0 8 8 0;";
 
         toggleBtn.setStyle(baseStyle);
         toggleBtn.setPrefHeight(60);
         toggleBtn.setMaxHeight(60);
-        toggleBtn.setPrefWidth(32); // ডাবল অ্যারোর জন্য একটু চওড়া
+        toggleBtn.setPrefWidth(32);
 
-        // হোভার ইফেক্ট: ব্যাকগ্রাউন্ড চেঞ্জ হবে এবং আইকন সাদা হবে
         toggleBtn.setOnMouseEntered(e -> {
             toggleBtn.setStyle(hoverStyle);
             ((SVGPath)toggleBtn.getGraphic()).setFill(Color.WHITE);
+
+            javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(150), toggleBtn);
+            st.setToX(0.85); st.setToY(0.85);
+            st.play();
         });
         toggleBtn.setOnMouseExited(e -> {
-            if (slideContainer.getPrefWidth() > 0) { // শুধু যদি ওপেন থাকে তবেই বেস স্টাইলে ফিরবে
+            if (slideContainer.getPrefWidth() > 0) {
                 toggleBtn.setStyle(baseStyle);
                 ((SVGPath)toggleBtn.getGraphic()).setFill(Color.web("#AAAAAA"));
             }
+
+            javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(150), toggleBtn);
+            st.setToX(1.0); st.setToY(1.0);
+            st.play();
         });
 
-        // অ্যানিমেশন লজিক
         toggleBtn.setOnAction(e -> {
             boolean isExpanded = slideContainer.getPrefWidth() > 0;
             javafx.animation.Timeline timeline = new javafx.animation.Timeline();
 
             if (isExpanded) {
-                // ১. স্লাইড আউট (বন্ধ হচ্ছে) -> আইকন হবে >>
                 ((SVGPath)toggleBtn.getGraphic()).setContent("M6.41 6L5 7.41 9.58 12 5 16.59 6.41 18l6-6-6-6zM12.41 6L11 7.41 15.58 12 11 16.59 12.41 18l6-6-6-6z");
-                // বন্ধ অবস্থায় বাটনটা একটু ট্রান্সপারেন্ট করে দেওয়া যায় (অপশনাল)
                 toggleBtn.setStyle("-fx-background-color: #11111199; -fx-background-radius: 0 8 8 0; -fx-cursor: hand;");
 
                 timeline.getKeyFrames().add(
@@ -125,9 +143,8 @@ public class UIManager {
                         )
                 );
             } else {
-                // ২. স্লাইড ইন (খুলছে) -> আইকন হবে <<
                 ((SVGPath)toggleBtn.getGraphic()).setContent("M17.59 7.41L16.17 6l-6 6 6 6 1.41-1.41L13 12l4.59-4.59zM11.59 7.41L10.17 6l-6 6 6 6 1.41-1.41L7 12l4.59-4.59z");
-                toggleBtn.setStyle(baseStyle); // খোলার সময় আবার সলিড কালার
+                toggleBtn.setStyle(baseStyle);
 
                 timeline.getKeyFrames().add(
                         new javafx.animation.KeyFrame(javafx.util.Duration.millis(300),
@@ -139,43 +156,76 @@ public class UIManager {
             timeline.play();
         });
 
-        // ৩. র‍্যাপার (Wrapper)
         HBox wrapper = new HBox(slideContainer, toggleBtn);
         wrapper.setAlignment(Pos.CENTER_LEFT);
 
         return wrapper;
     }
-
     private void addFunctionInputBox(int insertIndex) {
         VBox mainRow = new VBox(5);
         mainRow.setStyle("-fx-background-color: transparent;");
+
+        VBox.setMargin(mainRow, new Insets(5, 20, 15, 20));
 
         Color assignedColor = appState.getNextColor();
         mainRow.setUserData(assignedColor);
 
         VBox fieldAndPrompt = new VBox(0);
-        fieldAndPrompt.setStyle("-fx-background-color: White; -fx-background-radius: 10; -fx-border-color: #9D00FF; -fx-border-width: 2; -fx-border-radius: 10;");
+
+        String normalBoxStyle = "-fx-background-color: #333333; -fx-background-radius: 20px;";
+        String activeBoxStyle = "-fx-background-color: #444444; -fx-background-radius: 20px;";
+
+        fieldAndPrompt.setStyle(normalBoxStyle);
+
+        Color shadowColor = Color.color(assignedColor.getRed(), assignedColor.getGreen(), assignedColor.getBlue());
+
+        javafx.scene.effect.DropShadow normalShadow = new javafx.scene.effect.DropShadow();
+        normalShadow.setRadius(10);
+        normalShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.25));
+        mainRow.setEffect(normalShadow);
 
         TextField inputBox = new TextField();
         inputBox.setPromptText("Ex: ax + b");
-        inputBox.setStyle("-fx-background-color: transparent; -fx-text-fill: black; -fx-font-size: 15px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        inputBox.setPadding(new Insets(15, 80, 15, 35));
+
+        inputBox.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        inputBox.setPadding(new Insets(10, 45, 10, 30));
+
         inputBox.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 activeTextField = inputBox;
                 int currentIndex = functionContainer.getChildren().indexOf(mainRow);
                 appState.setFocusedEquationIndex(currentIndex);
+
+                javafx.animation.ScaleTransition scaleUp = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                scaleUp.setToX(1.08); scaleUp.setToY(1.08);
+                scaleUp.play();
+
+                fieldAndPrompt.setStyle(activeBoxStyle);
+
+                javafx.scene.effect.DropShadow activeShadow = new javafx.scene.effect.DropShadow();
+                activeShadow.setRadius(25);
+                activeShadow.setSpread(0.3);
+                activeShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.8));
+                mainRow.setEffect(activeShadow);
+
             } else {
                 appState.setFocusedEquationIndex(-1);
                 appState.getTemporaryPoints().clear();
+
+                javafx.animation.ScaleTransition scaleDown = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                scaleDown.setToX(1.0); scaleDown.setToY(1.0);
+                scaleDown.play();
+
+                fieldAndPrompt.setStyle(normalBoxStyle);
+                mainRow.setEffect(normalShadow);
             }
             redrawCallback.run();
         });
 
-        // --- NEW: Up / Down Arrow ও Enter দিয়ে নেভিগেশন (Fixed Version) ---
+        // Arrow keys & Backspace logic
         inputBox.setOnKeyPressed(event -> {
             var rows = functionContainer.getChildren();
-            int currentIndex = rows.indexOf(mainRow); // সরাসরি mainRow (VBox) এর ইনডেক্স বের করছি
+            int currentIndex = rows.indexOf(mainRow);
 
             if (event.getCode() == KeyCode.UP) {
                 if (currentIndex > 0) {
@@ -188,16 +238,25 @@ public class UIManager {
                     event.consume();
                 }
             } else if (event.getCode() == KeyCode.ENTER) {
-                // Enter চাপলে বর্তমান বক্সের ঠিক নিচে নতুন বক্স আসবে
                 addFunctionInputBox(currentIndex + 1);
                 event.consume();
             } else if (event.getCode() == KeyCode.BACK_SPACE && inputBox.getText().isEmpty()) {
-                // ব্যাকস্পেস চাপলে এবং বক্স খালি থাকলে আগের বক্সে যাবে এবং এটা ডিলিট হবে
                 if (currentIndex > 0) {
                     focusTextFieldInRow(rows.get(currentIndex - 1));
-                    // এখানে ডিলিট করার লজিকটা কল হবে (নিচে ডিফাইন করা আছে)
-                    rows.remove(mainRow);
-                    redrawCallback.run();
+
+                    javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                    st.setToX(0.0);
+
+                    javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(200), mainRow);
+                    ft.setToValue(0.0);
+
+                    javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(st, ft);
+                    pt.setOnFinished(e -> {
+                        rows.remove(mainRow);
+                        redrawCallback.run();
+                    });
+                    pt.play();
+
                     event.consume();
                 }
             }
@@ -215,7 +274,7 @@ public class UIManager {
         javafx.scene.shape.Circle colorDot = new javafx.scene.shape.Circle(6, assignedColor);
 
         StackPane.setAlignment(colorDot, Pos.TOP_LEFT);
-        StackPane.setMargin(colorDot, new Insets(20, 0, 0, 15));
+        StackPane.setMargin(colorDot, new Insets(14, 0, 0, 12));
 
         colorDot.setCursor(javafx.scene.Cursor.HAND);
         colorDot.setOnMouseClicked(event -> showColorPopup(colorDot, mainRow, event));
@@ -226,10 +285,13 @@ public class UIManager {
         buttonBox.setPickOnBounds(false);
 
         StackPane.setAlignment(buttonBox, Pos.TOP_RIGHT);
-        StackPane.setMargin(buttonBox, new Insets(10, 10, 0, 0));
+        // --- LOOK UPDATE: ক্রস বাটনকে উপরের দিকে (Margin কমিয়ে) সরানো হয়েছে ---
+        StackPane.setMargin(buttonBox, new Insets(3, 10, 0, 0));
 
         Button closeBtn = createIconButton("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z", "gray", 10);
-        HBox.setMargin(closeBtn, new Insets(5, 8, 0, 0));
+        // --- LOOK UPDATE: এখান থেকেও টপ মার্জিন কমিয়ে দেওয়া হয়েছে ---
+        HBox.setMargin(closeBtn, new Insets(2, 8, 0, 0));
+
         closeBtn.setOnMouseEntered(e -> ((SVGPath)closeBtn.getGraphic()).setFill(Color.RED));
         closeBtn.setOnMouseExited(e -> ((SVGPath)closeBtn.getGraphic()).setFill(Color.GRAY));
 
@@ -239,11 +301,28 @@ public class UIManager {
         VBox sliderContainer = new VBox(5);
         sliderContainer.setPadding(new Insets(5, 0, 0, 20));
 
-        // ডিলিট অ্যাকশন
         Runnable deleteAction = () -> {
-            if (functionContainer.getChildren().size() > 1) {
-                functionContainer.getChildren().remove(mainRow);
-                redrawCallback.run();
+            var rows = functionContainer.getChildren();
+            int currentIndex = rows.indexOf(mainRow);
+
+            if (rows.size() > 1) {
+                javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                st.setToX(0.0);
+
+                javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(200), mainRow);
+                ft.setToValue(0.0);
+
+                javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(st, ft);
+                pt.setOnFinished(e -> {
+                    rows.remove(mainRow);
+                    if (currentIndex > 0) {
+                        focusTextFieldInRow(rows.get(currentIndex - 1));
+                    } else if (!rows.isEmpty()) {
+                        focusTextFieldInRow(rows.get(0));
+                    }
+                    redrawCallback.run();
+                });
+                pt.play();
             } else {
                 inputBox.clear();
                 sliderContainer.getChildren().clear();
@@ -261,14 +340,26 @@ public class UIManager {
 
         mainRow.getChildren().addAll(inputWrapper, sliderContainer);
 
-        // ইনসার্ট লজিক
+        // --- NEW: Creation Animation (মাঝখান থেকে প্রসারিত হবে, একটু ধীরগতিতে) ---
+        mainRow.setScaleX(0.0);
+        mainRow.setOpacity(0.0);
+
         if (insertIndex >= 0 && insertIndex <= functionContainer.getChildren().size()) {
             functionContainer.getChildren().add(insertIndex, mainRow);
         } else {
             functionContainer.getChildren().add(mainRow);
         }
 
-        // ফোকাস ও স্ক্রল অ্যানিমেশন
+        // 300ms Duration for slightly slower creation animation
+        javafx.animation.ScaleTransition stIn = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(300), mainRow);
+        stIn.setToX(1.0);
+
+        javafx.animation.FadeTransition ftIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300), mainRow);
+        ftIn.setToValue(1.0);
+
+        javafx.animation.ParallelTransition ptIn = new javafx.animation.ParallelTransition(stIn, ftIn);
+        ptIn.play();
+
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(50));
         pause.setOnFinished(e -> {
             inputBox.requestFocus();
@@ -286,7 +377,6 @@ public class UIManager {
         });
         pause.play();
     }
-
     private Button createIconButton(String svgData, String colorHex, double size) {
         SVGPath path = new SVGPath();
         path.setContent(svgData);
