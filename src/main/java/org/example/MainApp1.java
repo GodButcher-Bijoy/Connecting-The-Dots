@@ -73,21 +73,17 @@ public class MainApp1 extends Application {
         // Swap the scene root
         mainStage.getScene().setRoot(wrapper);
     }
-
     private BorderPane createMainUI(EquationPreset presetToLoad) {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #333333;");
 
         AppState appState = new AppState();
-
-        // Circular dependency resolver
         Runnable[] redrawAction = new Runnable[1];
 
         UIManager uiManager = new UIManager(appState, () -> {
             if (redrawAction[0] != null) redrawAction[0].run();
         });
 
-        // Graph pane + canvas
         Pane graphPane = new Pane();
         graphPane.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 12;");
         BorderPane.setMargin(graphPane, new Insets(20));
@@ -97,62 +93,63 @@ public class MainApp1 extends Application {
         canvas.heightProperty().bind(graphPane.heightProperty());
         graphPane.getChildren().add(canvas);
 
-        // ── Home button (top-right) ──────────────────────────────────────────
-        Button homeBtn = new Button("🏠 Home");
-        homeBtn.setStyle(
-                "-fx-background-color: white; -fx-border-color: #ccc; " +
-                        "-fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; " +
-                        "-fx-font-size: 13px; -fx-padding: 6 14;"
-        );
-        StackPane.setAlignment(homeBtn, Pos.TOP_RIGHT);
-        StackPane.setMargin(homeBtn, new Insets(15));
+        // ── 🔍 Focus (Re-center) Button (Circular, Floating on Graph) ────────
+        Button focusBtn = new Button("🔍");
+        String normalFocusStyle = "-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-border-color: #555555; " +
+                "-fx-background-radius: 50em; -fx-border-radius: 50em; -fx-cursor: hand; " +
+                "-fx-font-size: 16px; -fx-min-width: 45px; -fx-min-height: 45px; -fx-max-width: 45px; -fx-max-height: 45px;";
+        String hoverFocusStyle = "-fx-background-color: #333333; -fx-text-fill: #39FF14; -fx-border-color: #39FF14; " +
+                "-fx-background-radius: 50em; -fx-border-radius: 50em; -fx-cursor: hand; " +
+                "-fx-font-size: 16px; -fx-min-width: 45px; -fx-min-height: 45px; -fx-max-width: 45px; -fx-max-height: 45px;";
 
-        // ── Library button (top-left of the graph area) ──────────────────────
+        focusBtn.setStyle(normalFocusStyle);
+        focusBtn.setOnMouseEntered(e -> focusBtn.setStyle(hoverFocusStyle));
+        focusBtn.setOnMouseExited(e -> focusBtn.setStyle(normalFocusStyle));
+
+        // ── Library button (Will stick to Sidebar) ──────────────────────
         Button libraryBtn = new Button("📚 Library ▾");
         libraryBtn.setStyle(
                 "-fx-background-color: #9D00FF; -fx-text-fill: white; -fx-font-weight: bold; " +
                         "-fx-background-radius: 8; -fx-cursor: hand; " +
                         "-fx-font-size: 13px; -fx-padding: 6 14;"
         );
-        StackPane.setAlignment(libraryBtn, Pos.TOP_LEFT);
-        StackPane.setMargin(libraryBtn, new Insets(15));
 
-        // ── Build the dropdown ContextMenu from EquationLibrary ──────────────
         ContextMenu libraryMenu = buildLibraryMenu(uiManager);
         libraryBtn.setOnAction(e -> {
             if (libraryMenu.isShowing()) {
                 libraryMenu.hide();
             } else {
-                libraryMenu.show(libraryBtn,
-                        javafx.geometry.Side.BOTTOM, 0, 4);
+                libraryMenu.show(libraryBtn, javafx.geometry.Side.BOTTOM, 0, 4);
             }
         });
 
-        // Center wrapper: graph + overlay buttons + keypad
+        // Center wrapper: Graph, Keypad, and the floating Focus Button
         StackPane centerWrapper = new StackPane();
         centerWrapper.getChildren().add(graphPane);
-        centerWrapper.getChildren().add(homeBtn);
-        centerWrapper.getChildren().add(libraryBtn);
 
         VBox floatingKeypad = uiManager.createFloatingKeypad();
         StackPane.setAlignment(floatingKeypad, Pos.BOTTOM_CENTER);
         centerWrapper.getChildren().add(floatingKeypad);
 
-        // GraphRenderer
+        // Put Focus Button on top right of the graph pane
+        StackPane.setAlignment(focusBtn, Pos.TOP_RIGHT);
+        StackPane.setMargin(focusBtn, new Insets(35, 35, 0, 0)); // Ektu margin diye graph er corner e bosano
+        centerWrapper.getChildren().add(focusBtn);
+
         GraphRenderer graphRenderer = new GraphRenderer(appState, canvas, uiManager.getFunctionContainer());
         redrawAction[0] = () -> graphRenderer.drawGraph();
 
-        homeBtn.setOnAction(e -> {
+        focusBtn.setOnAction(e -> {
             appState.setScale(40);
             appState.setOffsetX(0);
             appState.setOffsetY(0);
             graphRenderer.drawGraph();
         });
 
-        root.setLeft(uiManager.createSidebar());
+        // Sidebar e shudhu libraryBtn pathano hocche
+        root.setLeft(uiManager.createSidebar(libraryBtn));
         root.setCenter(centerWrapper);
 
-        // If a preset was selected from the new Library Screen, load it!
         if (presetToLoad != null) {
             uiManager.loadPreset(presetToLoad);
         }
@@ -160,7 +157,6 @@ public class MainApp1 extends Application {
         graphRenderer.drawGraph();
         return root;
     }
-
     // =========================================================================
     // Build the nested ContextMenu from EquationLibrary
     // =========================================================================
