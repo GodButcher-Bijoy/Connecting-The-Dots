@@ -278,7 +278,7 @@ public class IntroScene {
         Group group = new Group();
         double r = size / 2.0;
         PhongMaterial sideMat = new PhongMaterial(Color.BLACK);
-        PhongMaterial frontMat = new PhongMaterial(Color.web("#97c9d1")); //new PhongMaterial(Color.web("#4169E1"));
+        PhongMaterial frontMat = new PhongMaterial(Color.web("#05ffe7")); //new PhongMaterial(Color.web("#4169E1"));
         Box front = new Box(size, size, 1); front.setTranslateZ(-r); front.setMaterial(frontMat);
         Box back = new Box(size, size, 1); back.setTranslateZ(r); back.setMaterial(frontMat);
         Box left = new Box(1, size, size); left.setTranslateX(-r); left.setMaterial(sideMat);
