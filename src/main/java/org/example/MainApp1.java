@@ -50,17 +50,18 @@ public class MainApp1 extends Application {
 
     private void launchMainUI(AppState.GraphMode mode, EquationPreset presetToLoad) {
         // Create your existing Main UI and pass the preset to load it
-        BorderPane mainRoot = createMainUI(presetToLoad);
+        BorderPane mainRoot = createMainUI(mode,presetToLoad);
 
         // Swap the scene root directly (No wrapper needed anymore as backBtn is in sidebar)
         mainStage.getScene().setRoot(mainRoot);
     }
 
-    private BorderPane createMainUI(EquationPreset presetToLoad) {
+    private BorderPane createMainUI(AppState.GraphMode mode, EquationPreset presetToLoad) {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #333333;");
 
         AppState appState = new AppState();
+        appState.setGraphMode(mode);
         Runnable[] redrawAction = new Runnable[1];
 
         UIManager uiManager = new UIManager(appState, () -> {

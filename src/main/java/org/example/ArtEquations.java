@@ -27,8 +27,8 @@ public class ArtEquations extends EquationCategory {
                 lemniscate(),
                 lissajous(),
                 spirograph(),
-                astroid(),
-                epicycloid(),
+                Pumpkin(),
+                Among_Us(),
                 Yin_Yang_simble(),
                 hypotrochoid()
         );
@@ -58,19 +58,46 @@ public class ArtEquations extends EquationCategory {
         );
     }
 
-    // Astroid  x=cos³t, y=sin³t
-    private EquationPreset astroid() {
-        return new EquationPreset(
-                "Astroid ✦", "Astroid: x=cos³(t), y=sin³(t)  (x^(2/3)+y^(2/3)=1)", 95.0,
-                EquationEntry.of("(cos(t)^3,sin(t)^3)", "#B8860B")        // dark gold
+    private EquationPreset Pumpkin() {
+        return new EquationPreset("Halloween Pumpkin", "Halloween Pumpkin", 40.0,
+                EquationEntry.of("x²/9+y²/16 = 1{-1.5<x<1.5,y<0}", "#ff9500"),
+                EquationEntry.of("x²/9+y²/16 = 1{-2.2<x<2.2,y>0}", "#ff9500"),
+                EquationEntry.of("(x-2)²/9+y²/16 = 1{x>1}", "#ff9500"),
+                EquationEntry.of("(x+2)²/9+y²/16 = 1{x<-1}", "#ff9500"),
+                EquationEntry.of("y = 10(x+1)²+4{-1<x<-.5}", "#00ff00"),
+                EquationEntry.of("y = 10(-x+1)²+4{.5<x<1}", "#00ff00"),
+                EquationEntry.of("y=6.5{-.5<x<.5}", "#00ff00"),
+                EquationEntry.of("y-1 ≤ x + 2.5{-2.5≤x≤-1.5,y-0.5 ≥(x + 1)/ -3}", "#000000"),
+                EquationEntry.of("y-0.5 ≤ -3(x + 1){-1.5≤x≤-1,y-0.5 ≥(x + 1)/ -3}", "#000000"),
+                EquationEntry.of("y-0.5 =(x + 1)/ -3{-2.5≤x≤-1}", "#000000"),
+                EquationEntry.of("y-1 ≤- x + 2.5{1.5≤x≤2.5,y-0.5 ≥(-x + 1)/ -3}", "#000000"),
+                EquationEntry.of("y-0.5 ≤ -3(-x + 1){1≤x≤1.5,y-0.5 ≥(-x + 1)/ -3}", "#000000"),
+                EquationEntry.of("y-0.5 =(-x + 1)/ -3{1≤x≤2.5}", "#000000"),
+                EquationEntry.of("y ≤ 0.08x²-0.5{-2.5≤x≤2.5,y ≥ 0.4x²-2.5}", "#000000"),
+                EquationEntry.of("y = 0.4x²-2.5{-2.5≤x≤2.5}", "#000000"),
+                EquationEntry.of("x = .5{-1≤y≤-0.5}", "#ffffff"),
+                EquationEntry.of("-x = .5{-1≤y≤-0.5}", "#ffffff"),
+                EquationEntry.of("x =1{-1≤y≤-0.5}", "#ffffff"),
+                EquationEntry.of("-x =1{-1≤y≤-0.5}", "#ffffff"),
+                EquationEntry.of("y ≥ -1{0.5<x<1,y ≤ 0.08x²-0.5}", "#ffffff"),
+                EquationEntry.of("y ≥-1{-1<x<-0.5,y ≤ 0.08x²-0.5}", "#ffffff")
         );
     }
 
-    // Epicycloid R=3, r=1  (4-cusps)
-    private EquationPreset epicycloid() {
+    private EquationPreset Among_Us() {
         return new EquationPreset(
-                "Epicycloid ☀", "Epicycloid with R=3, r=1", 20.0,
-                EquationEntry.of("((3+1)*cos(t)-1*cos((3+1)*t),(3+1)*sin(t)-1*sin((3+1)*t))", "#CC0000") // crimson
+                "ANGEL HALO ", "AMONG US ANGEL HALO Character", 40.0,
+                EquationEntry.of("(x-.3)²/16+(y-1.1)²/30=1{-2.5<x<3.736,y>3}", "#0000ff"),
+                EquationEntry.of("(x-.4)²/12+(y+0.5)²/100=1{-4.235<y<5.03,x<-2}", "#0000ff"),
+                EquationEntry.of("(x+1.4)²/2+(y+4.3)²/5=1{y<-4}", "#0000ff"),
+                EquationEntry.of("(x-2.4)²/1.7+(y+3.7)²/5=1{y<-3.538, 1.12<x}", "#0000ff"),
+                EquationEntry.of("(x-1)²/7+(y+1.9)²/5=1{0<x<2.3,y<-3}", "#0000ff"),
+                EquationEntry.of("(x-1.8)²/7.3+(y-2.6)²/3.5<1", "#0000ff"),
+                EquationEntry.of("(x+2.6)²/5+(y+.4)²/10=1{-2.87>x}", "#0000ff"),
+                EquationEntry.of("(x-.1)²/9+(y-8.53)²/1≤1{(x-.1)²/4+(y-8.6)²/.2>1}", "#ffa408"),
+                EquationEntry.of("(x-.1)²/4+(y-8.6)²/.2=1", "#ffa408"),
+                EquationEntry.of("(x-.4)²/12+(y+.5)²/100=1{-3.6<y<1.3,x>2}", "#0000ff"),
+                EquationEntry.of("(x-.9)²/16+(y-3.3)²/40=1{-2.976<x<3.861,y<4}", "#0000ff")
         );
     }
 
