@@ -24,7 +24,7 @@ public class ArtEquations extends EquationCategory {
     @Override
     public List<EquationPreset> getPresets() {
         return Arrays.asList(
-                lemniscate(),
+                MickeyMouse(),
                 lissajous(),
                 spirograph(),
                 Pumpkin(),
@@ -35,10 +35,23 @@ public class ArtEquations extends EquationCategory {
     }
 
     // Lemniscate of Bernoulli  (x²+y²)² = 2(x²−y²)
-    private EquationPreset lemniscate() {
+    private EquationPreset MickeyMouse() {
         return new EquationPreset(
-                "Lemniscate ∞", "Lemniscate of Bernoulli: (x²+y²)² = 2(x²−y²)", 60.0,
-                EquationEntry.of("(x^2+y^2)^2=2*(x^2-y^2)", "#4B0082")   // deep indigo
+                "Lemniscate ∞", "Lemniscate of Bernoulli: (x²+y²)² = 2(x²−y²)", 20.0,
+                EquationEntry.of("x² + y² ≤ 100", "#f1c27d") ,
+                EquationEntry.of("x² + y² = 100", "#000000"),
+                EquationEntry.of("(x+8)² + (y-10)² < 3²", "#000000"),
+                EquationEntry.of("(x-8)² +(y-10)² <3²", "#000000"),
+                EquationEntry.of("(x+3)²/2² + (y-5)²/3² = 1", "#000000"),
+                EquationEntry.of("(x-3)²/2² + (y-5)²/3² = 1", "#000000"),
+                EquationEntry.of("(x-3)²/1² + (y-5)²/1.5² <1", "#000000"),
+                EquationEntry.of("(x+3)²/1² + (y-5)²/1.5² <1", "#000000"),
+                EquationEntry.of("x²/2² + y²/1.2 < 1", "#000000"),
+                EquationEntry.of("y = 0.1(x)² -6{7 > x >-7}", "#000000"),
+                EquationEntry.of("y ≥ 0.2(x)² -8{4.5 > x >-4.5, 0.1(x)² -6≥y}", "#FF0000"),
+                EquationEntry.of("y = 0.2(x)² -8{4.5 > x >-4.5}", "#000000")
+
+
         );
     }
 
