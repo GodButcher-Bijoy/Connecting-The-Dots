@@ -34,7 +34,7 @@ public class FunctionPlotter {
         Expression expr = EquationHandler.buildExpression(function, "x", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
-        double step = .005;
+        double step = .1;
         double prevMathY = Double.NaN;
 
         for (double screenX = 0; screenX < width; screenX += step) {
@@ -89,7 +89,7 @@ public class FunctionPlotter {
         Expression expr = EquationHandler.buildExpression(function, "y", appState.getGlobalVariables());
         gc.beginPath();
         boolean first = true;
-        double step = .005;
+        double step = .1;
         double prevMathX = Double.NaN;
 
         for (double screenY = 0; screenY < height; screenY += step) {
@@ -180,7 +180,7 @@ public class FunctionPlotter {
         }
     }
 
-    // ⚠️ FIXED: public করা হয়েছে যাতে GraphRenderer কল করতে পারে
+    // ⚠️ FIXED: public করা হয়েছে যাতে GraphRenderer কল করতে পারে
     public void plotParametric(String xEq, String yEq, Color color, double cx, double cy, double width, double height, BoundaryCondition boundary) {
         gc.setStroke(color);
         gc.setLineWidth(2.5);
@@ -190,48 +190,87 @@ public class FunctionPlotter {
             Expression exprX = EquationHandler.buildExpression(xEq, "t", appState.getGlobalVariables());
             Expression exprY = EquationHandler.buildExpression(yEq, "t", appState.getGlobalVariables());
 
-            boolean first = true;
-            double tStart = 0;
-            double tEnd = 12 * Math.PI;
-            double tStep = 0.05;
+            double tStart = -100;
+            double tEnd   = 100;
+            double tStep  = 0.02; // finer step → smoother curves
+
+            // How far outside the canvas we still allow a point to be drawn.
+            // Beyond this the value is effectively tending to ±infinity → lift the pen.
+            double margin    = Math.max(width, height) * 3.0;
+
+            // A jump larger than this in SCREEN PIXELS between two consecutive points
+            // means there is a real discontinuity / asymptote → lift the pen.
+            // Using screen-space (not math-space) so the check is zoom-independent.
+            double jumpLimit = Math.hypot(width, height) * 1.5;
+
+            boolean pathStarted = false;
+            double prevSX = Double.NaN;
+            double prevSY = Double.NaN;
 
             for (double t = tStart; t <= tEnd; t += tStep) {
-                exprX.setVariable("t", t);
-                exprY.setVariable("t", t);
-
                 double mathX, mathY;
                 try {
+                    exprX.setVariable("t", t);
+                    exprY.setVariable("t", t);
                     mathX = exprX.evaluate();
                     mathY = exprY.evaluate();
-                } catch (Exception e) { continue; }
+                } catch (Exception e) {
+                    // evaluation error → treat as discontinuity, lift the pen
+                    pathStarted = false;
+                    prevSX = prevSY = Double.NaN;
+                    continue;
+                }
 
+                // NaN or ±Infinity from the expression itself → discontinuity
+                if (!Double.isFinite(mathX) || !Double.isFinite(mathY)) {
+                    pathStarted = false;
+                    prevSX = prevSY = Double.NaN;
+                    continue;
+                }
+
+                // Boundary condition check
                 if (boundary != null && !boundary.test(mathX, mathY, t)) {
-                    first = true;
+                    pathStarted = false;
+                    prevSX = prevSY = Double.NaN;
                     continue;
                 }
 
-                if (Double.isNaN(mathX) || Double.isInfinite(mathX) || Double.isNaN(mathY) || Double.isInfinite(mathY)) {
-                    first = true;
+                double sx = cx + mathX * appState.getScale();
+                double sy = cy - mathY * appState.getScale();
+
+                // If the screen point is beyond the allowed margin the math value is
+                // tending toward ±infinity → lift the pen instead of clamping & drawing.
+                boolean atInfinity = sx < -margin || sx > width  + margin
+                        || sy < -margin || sy > height + margin;
+                if (atInfinity) {
+                    pathStarted = false;
+                    prevSX = prevSY = Double.NaN;
                     continue;
                 }
 
-                double screenX = cx + (mathX * appState.getScale());
-                double screenY = cy - (mathY * appState.getScale());
-
-                if (screenX < -1000 || screenX > width + 1000 || screenY < -1000 || screenY > height + 1000) {
-                    first = true;
-                    continue;
-                }
-
-                if (first) {
-                    gc.moveTo(screenX, screenY);
-                    first = false;
+                if (!pathStarted) {
+                    gc.moveTo(sx, sy);
+                    pathStarted = true;
                 } else {
-                    gc.lineTo(screenX, screenY);
+                    // Screen-space jump: zoom-independent discontinuity / asymptote detection
+                    double screenJump = Math.hypot(sx - prevSX, sy - prevSY);
+                    if (screenJump > jumpLimit) {
+                        // Real discontinuity → close current sub-path and start a new one
+                        gc.stroke();
+                        gc.beginPath();
+                        gc.moveTo(sx, sy);
+                    } else {
+                        gc.lineTo(sx, sy);
+                    }
                 }
+
+                prevSX = sx;
+                prevSY = sy;
             }
             gc.stroke();
-        } catch (Exception e) { }
+        } catch (Exception e) {
+            // silently ignore malformed equations
+        }
     }
 
     public void plotInequality(String lhs, String op, String rhs, Color color, double cx, double cy, double width, double height, BoundaryCondition boundary) {

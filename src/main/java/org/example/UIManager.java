@@ -10,6 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextFlow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,10 @@ public class UIManager {
     private ScrollPane scrollPane;
     private TextField activeTextField;
     private boolean isKeypadVisible = false;
+    // Shared animation timer for all slider animations
+    private final List<Runnable> sliderSteppers = new ArrayList<>();
+    private int activeAnimationCount = 0;
+    private javafx.animation.AnimationTimer sharedAnimationTimer = null;
 
     public UIManager(AppState appState, Runnable redrawCallback) {
         this.appState = appState;
@@ -74,6 +79,7 @@ public class UIManager {
         String b64Css = "data:text/css;base64," + java.util.Base64.getEncoder().encodeToString(css.getBytes());
         scrollPane.getStylesheets().add(b64Css);
 
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
         VBox floatingBoxContainer = new VBox(scrollPane);
         floatingBoxContainer.setStyle("-fx-background-color: #1A1A1A; -fx-border-color: #00FFFF; -fx-border-width: 2px; -fx-border-radius: 12px; -fx-background-radius: 12px;");
         floatingBoxContainer.setPadding(new Insets(15, 0, 15, 0));
@@ -182,12 +188,45 @@ public class UIManager {
         normalShadow.setRadius(10);
         normalShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.25));
         mainRow.setEffect(normalShadow);
+        // --- FIX: Create activeShadow here instead of inside the focus listener ---
+        javafx.scene.effect.DropShadow activeShadow = new javafx.scene.effect.DropShadow();
+        activeShadow.setRadius(25);
+        activeShadow.setSpread(0.3);
+        activeShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.8));
+
+        // --- FIX: Stash them in properties so updateRowShadowColor can find and update them ---
+        mainRow.getProperties().put("normalShadow", normalShadow);
+        mainRow.getProperties().put("activeShadow", activeShadow);
 
         TextField inputBox = new TextField();
         inputBox.setPromptText("Ex: ax + b");
 
         inputBox.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        inputBox.setPadding(new Insets(10, 45, 10, 30));
+        inputBox.setPadding(new Insets(10, 75, 10, 30));
+
+        // ── Real-time auto-format: converts raw sequences → Unicode as user types ─
+        final boolean[] isAutoFormatting = {false};
+        inputBox.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (isAutoFormatting[0]) return;
+            String formatted = autoFormatEquation(newVal);
+            if (!formatted.equals(newVal)) {
+                isAutoFormatting[0] = true;
+                int caret = inputBox.getCaretPosition();
+                inputBox.setText(formatted);
+                // Adjust caret: if substitution shortened the text, move caret back
+                inputBox.positionCaret(Math.max(0, Math.min(caret + (formatted.length() - newVal.length()), formatted.length())));
+                isAutoFormatting[0] = false;
+            }
+        });
+
+        // ── Math display overlay (pretty LaTeX-style when unfocused) ────────────
+        TextFlow mathDisplay = new TextFlow();
+        mathDisplay.setPadding(new Insets(12, 75, 10, 30));
+        mathDisplay.setMinHeight(40);
+        mathDisplay.setMouseTransparent(false);
+        mathDisplay.setVisible(false);
+        mathDisplay.setOnMouseClicked(e -> inputBox.requestFocus());
+        StackPane inputInner = new StackPane(inputBox, mathDisplay);
 
         inputBox.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
@@ -200,12 +239,11 @@ public class UIManager {
                 scaleUp.play();
 
                 fieldAndPrompt.setStyle(activeBoxStyle);
-
-                javafx.scene.effect.DropShadow activeShadow = new javafx.scene.effect.DropShadow();
-                activeShadow.setRadius(25);
-                activeShadow.setSpread(0.3);
-                activeShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.8));
                 mainRow.setEffect(activeShadow);
+
+                // Show the raw text field, hide the rendered overlay
+                inputBox.setOpacity(1);
+                mathDisplay.setVisible(false);
 
             } else {
                 appState.setFocusedEquationIndex(-1);
@@ -217,6 +255,16 @@ public class UIManager {
 
                 fieldAndPrompt.setStyle(normalBoxStyle);
                 mainRow.setEffect(normalShadow);
+
+                // Show pretty math display when not editing; hide the raw text field
+                if (!inputBox.getText().trim().isEmpty()) {
+                    MathRenderer.update(mathDisplay, EquationHandler.reverseAutoFormat(inputBox.getText()), Color.WHITE);
+                    inputBox.setOpacity(0);
+                    mathDisplay.setVisible(true);
+                } else {
+                    inputBox.setOpacity(1);
+                    mathDisplay.setVisible(false);
+                }
             }
             redrawCallback.run();
         });
@@ -239,25 +287,6 @@ public class UIManager {
             } else if (event.getCode() == KeyCode.ENTER) {
                 addFunctionInputBox(currentIndex + 1);
                 event.consume();
-            } else if (event.getCode() == KeyCode.BACK_SPACE && inputBox.getText().isEmpty()) {
-                if (currentIndex > 0) {
-                    focusTextFieldInRow(rows.get(currentIndex - 1));
-
-                    javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
-                    st.setToX(0.0);
-
-                    javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(200), mainRow);
-                    ft.setToValue(0.0);
-
-                    javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(st, ft);
-                    pt.setOnFinished(e -> {
-                        rows.remove(mainRow);
-                        redrawCallback.run();
-                    });
-                    pt.play();
-
-                    event.consume();
-                }
             }
         });
 
@@ -267,7 +296,7 @@ public class UIManager {
         promptBox.setVisible(false);
         promptBox.setManaged(false);
 
-        fieldAndPrompt.getChildren().addAll(inputBox, promptBox);
+        fieldAndPrompt.getChildren().addAll(inputInner, promptBox);
 
         StackPane inputWrapper = new StackPane();
         javafx.scene.shape.Circle colorDot = new javafx.scene.shape.Circle(6, assignedColor);
@@ -285,16 +314,41 @@ public class UIManager {
 
         StackPane.setAlignment(buttonBox, Pos.TOP_RIGHT);
         // --- LOOK UPDATE: ক্রস বাটনকে উপরের দিকে (Margin কমিয়ে) সরানো হয়েছে ---
-        StackPane.setMargin(buttonBox, new Insets(3, 10, 0, 0));
+        StackPane.setMargin(buttonBox, new Insets(3, 5, 0, 0));
+        String EYE_OPEN = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
+        String EYE_CLOSED = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 14.97 22.52 13.56 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.06 7.13 11 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z";
 
+        mainRow.getProperties().put("isHidden", false); // ডিফল্টভাবে Visible থাকবে
+
+        Button eyeBtn = createIconButton(EYE_OPEN, "gray", 12);
+        HBox.setMargin(eyeBtn, new Insets(1, 2, 0, 0));
+
+        eyeBtn.setOnMouseEntered(e -> ((SVGPath) eyeBtn.getGraphic()).setFill(Color.WHITE));
+        eyeBtn.setOnMouseExited(e -> ((SVGPath) eyeBtn.getGraphic()).setFill(Color.GRAY));
+
+        eyeBtn.setOnAction(e -> {
+            boolean isHidden = (boolean) mainRow.getProperties().getOrDefault("isHidden", false);
+            mainRow.getProperties().put("isHidden", !isHidden);
+
+            if (!isHidden) {
+                // বন্ধ করার আইকন এবং ইনপুট বক্স হালকা করে দেওয়া
+                ((SVGPath) eyeBtn.getGraphic()).setContent(EYE_CLOSED);
+                inputInner.setOpacity(0.4);
+            } else {
+                // খোলার আইকন এবং ইনপুট বক্স স্বাভাবিক করে দেওয়া
+                ((SVGPath) eyeBtn.getGraphic()).setContent(EYE_OPEN);
+                inputInner.setOpacity(1.0);
+            }
+            redrawCallback.run(); // Graph Canvas আপডেট করবে
+        });
         Button closeBtn = createIconButton("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z", "gray", 10);
         // --- LOOK UPDATE: এখান থেকেও টপ মার্জিন কমিয়ে দেওয়া হয়েছে ---
-        HBox.setMargin(closeBtn, new Insets(2, 8, 0, 0));
+        HBox.setMargin(closeBtn, new Insets(2, 5, 0, 0));
 
         closeBtn.setOnMouseEntered(e -> ((SVGPath)closeBtn.getGraphic()).setFill(Color.RED));
         closeBtn.setOnMouseExited(e -> ((SVGPath)closeBtn.getGraphic()).setFill(Color.GRAY));
 
-        buttonBox.getChildren().add(closeBtn);
+        buttonBox.getChildren().addAll(eyeBtn,closeBtn);
         inputWrapper.getChildren().addAll(fieldAndPrompt, colorDot, buttonBox);
 
         VBox sliderContainer = new VBox(5);
@@ -333,6 +387,16 @@ public class UIManager {
         javafx.animation.PauseTransition debounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
         debounce.setOnFinished(evt -> redrawCallback.run());
         inputBox.textProperty().addListener((obs, oldVal, newVal) -> {
+            Set<String> foundVars = EquationHandler.extractVariables(newVal);
+
+            for (javafx.scene.Node sliderRow : new java.util.ArrayList<>(sliderContainer.getChildren())) {
+                String vName = (String) sliderRow.getProperties().get("varName");
+                if (vName != null && !foundVars.contains(vName)) {
+                    if (sliderRow.getUserData() instanceof Runnable) {
+                        ((Runnable) sliderRow.getUserData()).run(); // Slider remove korbe
+                    }
+                }
+            }
             updateSliderPrompt(newVal, promptBox, sliderContainer, inputBox);
             debounce.playFromStart();
         });
@@ -438,89 +502,133 @@ public class UIManager {
         appState.getGlobalVariables().putIfAbsent(varName, 1.0);
         appState.getActiveSliderVars().add(varName);
 
+        // ১. Deleted flag: Slider delete hoye gele eita true hobe
+        final boolean[] isDeleted = {false};
 
-        HBox row = new HBox(10);
+        HBox row = new HBox(8);
         row.setAlignment(Pos.CENTER_LEFT);
+        row.getProperties().put("varName", varName);
         row.setStyle("-fx-background-color: #222; -fx-background-radius: 5; -fx-padding: 8; -fx-border-color: #444; -fx-border-radius: 5;");
+        row.setMinWidth(Region.USE_PREF_SIZE);
 
         Label nameLbl = new Label(varName + " =");
         nameLbl.setTextFill(Color.WHITE);
         nameLbl.setFont(Font.font("Consolas", FontWeight.BOLD, 14));
+        nameLbl.setMinWidth(Region.USE_PREF_SIZE);
 
         TextField valInput = new TextField(String.format("%.2f", appState.getGlobalVariables().get(varName)));
-        valInput.setPrefWidth(60);
-        valInput.setStyle("-fx-background-color: #333; -fx-text-fill: white; -fx-font-size: 12px;");
-
-        Button closeBtn = createIconButton("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z", "gray", 14);
+        valInput.setPrefWidth(55);
+        valInput.setMinWidth(55);
+        valInput.setStyle("-fx-background-color: #333; -fx-text-fill: white; -fx-font-size: 11px;");
 
         Slider slider = new Slider(-10, 10, appState.getGlobalVariables().get(varName));
-        slider.setPrefWidth(120);
+        slider.setPrefWidth(100);
+        HBox.setHgrow(slider, Priority.ALWAYS);
 
-        Runnable updateRange = () -> {
-            try {
-                double val = Double.parseDouble(valInput.getText());
-                appState.getGlobalVariables().put(varName, val);
-                double rangeSpan = 10;
-                slider.setMin(val - rangeSpan);
-                slider.setMax(val + rangeSpan);
-                slider.setValue(val);
-                redrawCallback.run();
-            } catch (NumberFormatException ex) {
-                valInput.setText(String.format("%.2f", appState.getGlobalVariables().get(varName)));
+        boolean[] isPlaying = {false};
+        boolean[] goingForward = {true};
+        Button playBtn = new Button("\u25B6");
+        playBtn.setMinWidth(30);
+        playBtn.setStyle("-fx-background-color: #4a8af4; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+
+        // Stepper logic e check kora hobe slider deleted kina
+        Runnable stepper = () -> {
+            if (isDeleted[0]) return; // Fix: Slider delete hole r value change hobe na
+            double cur = slider.getValue();
+            double step = 0.1;
+            if (goingForward[0]) {
+                if (cur + step >= slider.getMax()) goingForward[0] = false;
+                slider.setValue(cur + step);
+            } else {
+                if (cur - step <= slider.getMin()) goingForward[0] = true;
+                slider.setValue(cur - step);
             }
         };
 
-        valInput.setOnAction(e -> updateRange.run());
-        valInput.focusedProperty().addListener((obs, o, n) -> { if(!n) updateRange.run(); });
-
-        slider.valueProperty().addListener((obs, o, n) -> {
-            appState.getGlobalVariables().put(varName, n.doubleValue());
-            valInput.setText(String.format("%.2f", n.doubleValue()));
-            redrawCallback.run();
-        });
-        // Play/Pause animation button
-        Button playBtn = new Button("\u25B6");
-        playBtn.setStyle("-fx-background-color: #4a8af4; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 5; -fx-padding: 2 8 2 8;");
-        playBtn.setFocusTraversable(false);
-
-        boolean[] goingForward = {true};
-        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
-                new javafx.animation.KeyFrame(javafx.util.Duration.millis(30), evt -> {
-                    double span = slider.getMax() - slider.getMin();
-                    double step = span / 200.0;
-                    double newVal = slider.getValue() + (goingForward[0] ? step : -step);
-                    if (newVal >= slider.getMax()) { newVal = slider.getMax(); goingForward[0] = false; }
-                    else if (newVal <= slider.getMin()) { newVal = slider.getMin(); goingForward[0] = true; }
-                    slider.setValue(newVal);
-                }));
-        timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        Runnable stopAnimation = () -> {
+            if (isPlaying[0]) {
+                isPlaying[0] = false;
+                sliderSteppers.remove(stepper);
+                activeAnimationCount = Math.max(0, activeAnimationCount - 1); // Fix: decrement safely
+                playBtn.setText("\u25B6");
+                ensureSharedTimerRunning();
+            }
+        };
 
         playBtn.setOnAction(e -> {
-            if (timeline.getStatus() == javafx.animation.Animation.Status.RUNNING) {
-                timeline.pause();
-                playBtn.setText("\u25B6");
-            } else {
-                timeline.play();
+            if (!isPlaying[0]) {
+                isPlaying[0] = true;
+                sliderSteppers.add(stepper);
+                activeAnimationCount++;
                 playBtn.setText("\u23F8");
+            } else {
+                stopAnimation.run();
             }
+            ensureSharedTimerRunning();
         });
 
-        closeBtn.setOnAction(e -> {
-            timeline.stop();
+        // ২. Updated removeSliderAction
+        Runnable removeSliderAction = () -> {
+            if (isDeleted[0]) return; // Agei delete hoye thakle kichu korbe na
+            isDeleted[0] = true; // Mark as deleted immediately
+
+            stopAnimation.run(); // Animation stop kora holo
+
+            // UI theke slider row remove
             sliderContainer.getChildren().remove(row);
+
+            // Memory theke sob clean kora holo
             appState.getActiveSliderVars().remove(varName);
+            appState.getGlobalVariables().remove(varName); // Value deleted properly
+
             updateSliderPrompt(inputBox.getText(), promptBox, sliderContainer, inputBox);
-            redrawCallback.run();
+            redrawCallback.run(); // Graph/Canvas redraw
+        };
+
+        row.setUserData(removeSliderAction);
+
+        Button closeBtn = createIconButton("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z", "gray", 14);
+        closeBtn.setOnAction(e -> removeSliderAction.run());
+
+        // ৩. Slider listener e check add kora holo
+        slider.valueProperty().addListener((obs, o, n) -> {
+            if (isDeleted[0]) return; // Fix: Slider delete hoye gele memory-te r value push korbe na
+            appState.getGlobalVariables().put(varName, n.doubleValue());
+            valInput.setText(String.format("%.2f", n.doubleValue()));
+            if (!isPlaying[0]) redrawCallback.run();
         });
 
-        HBox spacer = new HBox();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        row.getChildren().addAll(nameLbl, valInput, slider, spacer, playBtn, closeBtn);
+        row.getChildren().addAll(nameLbl, valInput, slider, playBtn, closeBtn);
         sliderContainer.getChildren().add(row);
-
         updateSliderPrompt(inputBox.getText(), promptBox, sliderContainer, inputBox);
-        redrawCallback.run();
+    }
+
+    // Shared animation timer: sob slider mile ekbare redraw korbe
+    private void ensureSharedTimerRunning() {
+        if (sharedAnimationTimer == null) {
+            sharedAnimationTimer = new javafx.animation.AnimationTimer() {
+                private long lastNanos = 0;
+                @Override
+                public void handle(long now) {
+                    if (lastNanos == 0) { lastNanos = now; return; }
+                    double elapsedMs = (now - lastNanos) / 1_000_000.0;
+                    if (elapsedMs < 16) return; // ~60fps e cap kora holo
+                    lastNanos = now;
+
+                    boolean anyChanged = false;
+                    for (Runnable stepper : new ArrayList<>(sliderSteppers)) {
+                        stepper.run();
+                        anyChanged = true;
+                    }
+                    if (anyChanged) redrawCallback.run();
+                }
+            };
+        }
+        if (activeAnimationCount > 0) {
+            sharedAnimationTimer.start();
+        } else {
+            sharedAnimationTimer.stop();
+        }
     }
 
     // --- Custom Color Palette Popup Logic ---
@@ -547,9 +655,10 @@ public class UIManager {
             // Kon color e click korle ki hobe
             cDot.setOnMouseClicked(e -> {
                 colorDot.setFill(c);
-                mainRow.setUserData(c); // Backend er jonno color save korlam
-                redrawCallback.run();   // Graph abar draw korlam
-                popup.hide();           // Popup bondho kore dilam
+                mainRow.setUserData(c);
+                updateRowShadowColor(mainRow, c);  // live neon update
+                redrawCallback.run();
+                popup.hide();
             });
 
             grid.add(cDot, col, row);
@@ -569,6 +678,7 @@ public class UIManager {
             Color c = colorPicker.getValue();
             colorDot.setFill(c);
             mainRow.setUserData(c);
+            updateRowShadowColor(mainRow, c);  // live neon update
             redrawCallback.run();
             popup.hide();
         });
@@ -783,8 +893,8 @@ public class UIManager {
     // হেল্পার মেথড ১: টেক্সটফিল্ডটি কোনো কন্টেইনারের ভেতর আছে কি না তা ডিপ-সার্চ করে
     private boolean containsNode(javafx.scene.Node parent, javafx.scene.Node target) {
         if (parent == target) return true;
-        if (parent instanceof javafx.scene.layout.Pane) {
-            for (javafx.scene.Node child : ((javafx.scene.layout.Pane) parent).getChildren()) {
+        if (parent instanceof Pane) {
+            for (javafx.scene.Node child : ((Pane) parent).getChildren()) {
                 if (containsNode(child, target)) return true;
             }
         }
@@ -803,8 +913,8 @@ public class UIManager {
             javafx.application.Platform.runLater(() -> tf.positionCaret(tf.getText().length()));
             return true;
         }
-        if (node instanceof javafx.scene.layout.Pane) {
-            for (javafx.scene.Node child : ((javafx.scene.layout.Pane) node).getChildren()) {
+        if (node instanceof Pane) {
+            for (javafx.scene.Node child : ((Pane) node).getChildren()) {
                 if (findAndFocusTextField(child)) return true;
             }
         }
@@ -871,30 +981,129 @@ public class UIManager {
     //   • Pre-fills the TextField with initialText immediately
     //   • Does NOT steal keyboard focus — avoids janky multi-row loading
     // -------------------------------------------------------------------------
-    private void addFunctionInputBoxSilent(int insertIndex, String initialText, javafx.scene.paint.Color assignedColor) {
+    private void addFunctionInputBoxSilent(int insertIndex, String initialText, Color assignedColor) {
         VBox mainRow = new VBox(5);
         mainRow.setStyle("-fx-background-color: transparent;");
+        VBox.setMargin(mainRow, new Insets(5, 20, 15, 20));
 
-        mainRow.setUserData(assignedColor);   // color stored here, read by GraphRenderer
+        mainRow.setUserData(assignedColor);
 
         VBox fieldAndPrompt = new VBox(0);
-        fieldAndPrompt.setStyle("-fx-background-color: White; -fx-background-radius: 10; "
-                + "-fx-border-color: #9D00FF; -fx-border-width: 2; -fx-border-radius: 10;");
+        String normalBoxStyle = "-fx-background-color: #333333; -fx-background-radius: 20px;";
+        String activeBoxStyle  = "-fx-background-color: #444444; -fx-background-radius: 20px;";
+        fieldAndPrompt.setStyle(normalBoxStyle);
 
-        TextField inputBox = new TextField(initialText);   // pre-filled, no empty box
+        Color shadowColor = Color.color(assignedColor.getRed(), assignedColor.getGreen(), assignedColor.getBlue());
+
+        javafx.scene.effect.DropShadow normalShadow = new javafx.scene.effect.DropShadow();
+        normalShadow.setRadius(10);
+        normalShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.25));
+        mainRow.setEffect(normalShadow);
+
+        javafx.scene.effect.DropShadow activeShadow = new javafx.scene.effect.DropShadow();
+        activeShadow.setRadius(25);
+        activeShadow.setSpread(0.3);
+        activeShadow.setColor(Color.color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 0.8));
+
+        mainRow.getProperties().put("normalShadow", normalShadow);
+        mainRow.getProperties().put("activeShadow", activeShadow);
+
+        TextField inputBox = new TextField(autoFormatEquation(initialText));
         inputBox.setPromptText("Ex: ax + b");
-        inputBox.setStyle("-fx-background-color: transparent; -fx-text-fill: black; "
-                + "-fx-font-size: 15px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
-        inputBox.setPadding(new Insets(15, 80, 15, 35));
+        inputBox.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-family: 'Verdana'; -fx-font-weight: bold;");
+        inputBox.setPadding(new Insets(10, 75, 10, 30));
+
+        // ── Real-time auto-format listener ───────────────────────────────────────
+        final boolean[] isAutoFormatting = {false};
+        inputBox.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (isAutoFormatting[0]) return;
+            String formatted = autoFormatEquation(newVal);
+            if (!formatted.equals(newVal)) {
+                isAutoFormatting[0] = true;
+                int caret = inputBox.getCaretPosition();
+                inputBox.setText(formatted);
+                inputBox.positionCaret(Math.max(0, Math.min(caret + (formatted.length() - newVal.length()), formatted.length())));
+                isAutoFormatting[0] = false;
+            }
+        });
+
+        // ── Math display overlay (pre-filled since this starts unfocused) ───────
+        TextFlow mathDisplay = new TextFlow();
+        mathDisplay.setPadding(new Insets(12, 75, 10, 30));
+        mathDisplay.setMinHeight(40);
+        mathDisplay.setMouseTransparent(false);
+        mathDisplay.setVisible(false);
+        mathDisplay.setOnMouseClicked(e -> inputBox.requestFocus());
+        StackPane inputInner = new StackPane(inputBox, mathDisplay);
+
+        // Show the rendered math immediately (row starts unfocused)
+        // Pass the original ASCII text to MathRenderer so it renders correctly
+        if (!initialText.isEmpty()) {
+            MathRenderer.update(mathDisplay, initialText, Color.WHITE);
+            inputBox.setOpacity(0);
+            mathDisplay.setVisible(true);
+        }
+
+        VBox sliderContainer = new VBox(5);
+        sliderContainer.setPadding(new Insets(5, 0, 0, 20));
+
+        Runnable cleanupAllSliders = () -> {
+            for (javafx.scene.Node sliderRow : new java.util.ArrayList<>(sliderContainer.getChildren())) {
+                if (sliderRow.getUserData() instanceof Runnable) {
+                    ((Runnable) sliderRow.getUserData()).run(); // Memory cleanup & animation stop
+                }
+            }
+        };
+
+        Runnable deleteAction = () -> {
+            cleanupAllSliders.run(); // Sider gulo age clear hobe
+            var rows = functionContainer.getChildren();
+            int currentIndex = rows.indexOf(mainRow);
+
+            if (rows.size() > 1) {
+                // Animation code thakbe...
+                rows.remove(mainRow);
+            } else {
+                inputBox.clear();
+                sliderContainer.getChildren().clear();
+            }
+            redrawCallback.run();
+        };
 
         inputBox.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 activeTextField = inputBox;
                 int currentIndex = functionContainer.getChildren().indexOf(mainRow);
                 appState.setFocusedEquationIndex(currentIndex);
+
+                javafx.animation.ScaleTransition scaleUp = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                scaleUp.setToX(1.08); scaleUp.setToY(1.08);
+                scaleUp.play();
+                fieldAndPrompt.setStyle(activeBoxStyle);
+                mainRow.setEffect(activeShadow);
+
+                // Show the raw text field, hide the rendered overlay
+                inputBox.setOpacity(1);
+                mathDisplay.setVisible(false);
             } else {
                 appState.setFocusedEquationIndex(-1);
                 appState.getTemporaryPoints().clear();
+
+                javafx.animation.ScaleTransition scaleDown = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(200), mainRow);
+                scaleDown.setToX(1.0); scaleDown.setToY(1.0);
+                scaleDown.play();
+                fieldAndPrompt.setStyle(normalBoxStyle);
+                mainRow.setEffect(normalShadow);
+
+                // Show pretty math display when not editing; hide the raw text field
+                if (!inputBox.getText().trim().isEmpty()) {
+                    MathRenderer.update(mathDisplay, EquationHandler.reverseAutoFormat(inputBox.getText()), Color.WHITE);
+                    inputBox.setOpacity(0);
+                    mathDisplay.setVisible(true);
+                } else {
+                    inputBox.setOpacity(1);
+                    mathDisplay.setVisible(false);
+                }
             }
             redrawCallback.run();
         });
@@ -909,13 +1118,6 @@ public class UIManager {
             } else if (event.getCode() == KeyCode.ENTER) {
                 addFunctionInputBox(currentIndex + 1);
                 event.consume();
-            } else if (event.getCode() == KeyCode.BACK_SPACE && inputBox.getText().isEmpty()) {
-                if (currentIndex > 0) {
-                    focusTextFieldInRow(rows.get(currentIndex - 1));
-                    rows.remove(mainRow);
-                    redrawCallback.run();
-                    event.consume();
-                }
             }
         });
 
@@ -925,13 +1127,12 @@ public class UIManager {
         promptBox.setVisible(false);
         promptBox.setManaged(false);
 
-        fieldAndPrompt.getChildren().addAll(inputBox, promptBox);
+        fieldAndPrompt.getChildren().addAll(inputInner, promptBox);
 
         StackPane inputWrapper = new StackPane();
-        // Colour dot — uses the fixed category colour, not a random one
         javafx.scene.shape.Circle colorDot = new javafx.scene.shape.Circle(6, assignedColor);
         StackPane.setAlignment(colorDot, Pos.TOP_LEFT);
-        StackPane.setMargin(colorDot, new Insets(20, 0, 0, 15));
+        StackPane.setMargin(colorDot, new Insets(14, 0, 0, 12));
         colorDot.setCursor(javafx.scene.Cursor.HAND);
         colorDot.setOnMouseClicked(event -> showColorPopup(colorDot, mainRow, event));
 
@@ -940,37 +1141,57 @@ public class UIManager {
         buttonBox.setMaxWidth(70);
         buttonBox.setPickOnBounds(false);
         StackPane.setAlignment(buttonBox, Pos.TOP_RIGHT);
-        StackPane.setMargin(buttonBox, new Insets(10, 10, 0, 0));
+        StackPane.setMargin(buttonBox, new Insets(3, 5, 0, 0));
+        String EYE_OPEN = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z";
+        String EYE_CLOSED = "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 14.97 22.52 13.56 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.06 7.13 11 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z";
+
+        mainRow.getProperties().put("isHidden", false); // ডিফল্টভাবে Visible থাকবে
+
+        Button eyeBtn = createIconButton(EYE_OPEN, "gray", 12);
+        HBox.setMargin(eyeBtn, new Insets(1, 2, 0, 0));
+
+        eyeBtn.setOnMouseEntered(e -> ((SVGPath) eyeBtn.getGraphic()).setFill(Color.WHITE));
+        eyeBtn.setOnMouseExited(e -> ((SVGPath) eyeBtn.getGraphic()).setFill(Color.GRAY));
+
+        eyeBtn.setOnAction(e -> {
+            boolean isHidden = (boolean) mainRow.getProperties().getOrDefault("isHidden", false);
+            mainRow.getProperties().put("isHidden", !isHidden);
+
+            if (!isHidden) {
+                // বন্ধ করার আইকন এবং ইনপুট বক্স হালকা করে দেওয়া
+                ((SVGPath) eyeBtn.getGraphic()).setContent(EYE_CLOSED);
+                inputInner.setOpacity(0.4);
+            } else {
+                // খোলার আইকন এবং ইনপুট বক্স স্বাভাবিক করে দেওয়া
+                ((SVGPath) eyeBtn.getGraphic()).setContent(EYE_OPEN);
+                inputInner.setOpacity(1.0);
+            }
+            redrawCallback.run(); // Graph Canvas আপডেট করবে
+        });
 
         Button closeBtn = createIconButton(
                 "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
                 "gray", 10);
-        HBox.setMargin(closeBtn, new Insets(5, 8, 0, 0));
+        HBox.setMargin(closeBtn, new Insets(2, 5, 0, 0));
         closeBtn.setOnMouseEntered(e -> ((SVGPath) closeBtn.getGraphic()).setFill(Color.RED));
         closeBtn.setOnMouseExited(e -> ((SVGPath) closeBtn.getGraphic()).setFill(Color.GRAY));
-
-        buttonBox.getChildren().add(closeBtn);
-        inputWrapper.getChildren().addAll(fieldAndPrompt, colorDot, buttonBox);
-
-        VBox sliderContainer = new VBox(5);
-        sliderContainer.setPadding(new Insets(5, 0, 0, 20));
-
-        Runnable deleteAction = () -> {
-            if (functionContainer.getChildren().size() > 1) {
-                functionContainer.getChildren().remove(mainRow);
-                redrawCallback.run();
-            } else {
-                inputBox.clear();
-                sliderContainer.getChildren().clear();
-                redrawCallback.run();
-            }
-        };
         closeBtn.setOnAction(e -> deleteAction.run());
 
-        javafx.animation.PauseTransition debounce =
-                new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+        buttonBox.getChildren().addAll(eyeBtn, closeBtn);
+        inputWrapper.getChildren().addAll(fieldAndPrompt, colorDot, buttonBox);
+
+        javafx.animation.PauseTransition debounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
         debounce.setOnFinished(evt -> redrawCallback.run());
         inputBox.textProperty().addListener((obs, oldVal, newVal) -> {
+            Set<String> foundVars = EquationHandler.extractVariables(newVal);
+            for (javafx.scene.Node sliderRow : new ArrayList<>(sliderContainer.getChildren())) {
+                String vName = (String) sliderRow.getProperties().get("varName");
+                if (vName != null && !foundVars.contains(vName)) {
+                    if (sliderRow.getUserData() instanceof Runnable) {
+                        ((Runnable) sliderRow.getUserData()).run();
+                    }
+                }
+            }
             updateSliderPrompt(newVal, promptBox, sliderContainer, inputBox);
             debounce.playFromStart();
         });
@@ -982,7 +1203,61 @@ public class UIManager {
         } else {
             functionContainer.getChildren().add(mainRow);
         }
-        // NOTE: No requestFocus() call — caller drives focus after all rows are built.
-        // difference from addFunctionInputBox(). The caller drives focus.
+        // No focus stealing — caller drives focus after all rows are loaded.
+    }
+
+    /** Updates both DropShadow effects when the user picks a new color. */
+    private void updateRowShadowColor(VBox mainRow, Color newColor) {
+        Object ns = mainRow.getProperties().get("normalShadow");
+        Object as = mainRow.getProperties().get("activeShadow");
+        if (ns instanceof javafx.scene.effect.DropShadow) {
+            ((javafx.scene.effect.DropShadow) ns).setColor(
+                    Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.25));
+        }
+        if (as instanceof javafx.scene.effect.DropShadow) {
+            ((javafx.scene.effect.DropShadow) as).setColor(
+                    Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.8));
+        }
+    }
+
+    // ── Real-time input pretty-printer ────────────────────────────────────────
+    /**
+     * Converts raw equation sequences to Unicode as the user types.
+     * The back-end parser always receives the reversed (ASCII) form via
+     * EquationHandler.reverseAutoFormat(), so this is purely cosmetic.
+     *
+     * Conversions applied (longest patterns first to avoid partial matches):
+     *   sqrt(  →  √(
+     *   <=     →  ≤
+     *   >=     →  ≥
+     *   pi     →  π   (only when not part of a longer word)
+     *   ^0-9   →  ⁰¹²³…  (only single-digit exponents not followed by another digit)
+     */
+    private static String autoFormatEquation(String text) {
+        if (text == null || text.isEmpty()) return text;
+
+        // sqrt( → √(  (case-insensitive)
+        text = text.replaceAll("(?i)sqrt\\(", "√(");
+
+        // Operators
+        text = text.replace("<=", "≤");
+        text = text.replace(">=", "≥");
+
+        // pi → π  (not when it is part of a longer word, e.g. "spin" is safe)
+        text = text.replaceAll("(?i)(?<![a-zA-Z])pi(?![a-zA-Z])", "π");
+
+        // ^n → superscript digit — only when the digit is NOT followed by another digit
+        // This prevents ^10 from being half-converted to ¹0 while the user is still typing.
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\^([0-9])(?![0-9])").matcher(text);
+        StringBuffer sb = new StringBuffer();
+        String[] supers = {"⁰","¹","²","³","⁴","⁵","⁶","⁷","⁸","⁹"};
+        while (m.find()) {
+            m.appendReplacement(sb, supers[Integer.parseInt(m.group(1))]);
+        }
+        m.appendTail(sb);
+        text = sb.toString();
+
+        return text;
     }
 }

@@ -47,9 +47,31 @@ public class EquationHandler {
         return builder.functions(SEC, CSC, COSEC, COT);
     }
 
+    // ─── Reverse unicode pretty-print → raw ASCII (used by parser) ──────────
+    /**
+     * Converts every Unicode pretty-print character produced by autoFormatEquation()
+     * back to the ASCII form that exp4j expects.  Safe to call on already-ASCII text.
+     */
+    public static String reverseAutoFormat(String text) {
+        if (text == null || text.isEmpty()) return text;
+        // Superscript digits → ^n  (must come before other replacements)
+        text = text.replace("⁰","^0").replace("¹","^1").replace("²","^2")
+                .replace("³","^3").replace("⁴","^4").replace("⁵","^5")
+                .replace("⁶","^6").replace("⁷","^7").replace("⁸","^8")
+                .replace("⁹","^9");
+        // Unicode symbols → ASCII sequences
+        text = text.replace("√(", "sqrt(");
+        text = text.replace("π",  "pi");
+        text = text.replace("≤",  "<=");
+        text = text.replace("≥",  ">=");
+        text = text.replace("·",  "*");
+        return text;
+    }
+
     // ─── "2x" → "2*x" implicit multiplication ────────────────────────────────
     public static String formatEquation(String eqStr) {
-        String eq = eqStr.toLowerCase().replace(" ", "");
+        // Reverse any unicode pretty-print chars first so the parser sees plain ASCII
+        String eq = reverseAutoFormat(eqStr).toLowerCase().replace(" ", "");
 
         eq = eq.replaceAll("(\\d)([a-z])", "$1*$2"); // 2x   -> 2*x
         eq = eq.replaceAll("(\\d)(\\()",   "$1*$2"); // 2(x) -> 2*(x)

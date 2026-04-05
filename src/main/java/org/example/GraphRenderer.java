@@ -95,8 +95,12 @@ public class GraphRenderer {
 
         gc.clearRect(0, 0, width, height);
 
-        axesRenderer.drawSmartGridLines(width, height);
-        axesRenderer.drawAxes(width, height);
+        if (appState.getGraphMode() == AppState.GraphMode.POLAR) {
+            axesRenderer.drawPolarGrid(width, height);
+        } else {
+            axesRenderer.drawSmartGridLines(width, height);
+            axesRenderer.drawAxes(width, height);
+        }
 
         double centerX = width / 2.0 + appState.getOffsetX();
         double centerY = height / 2.0 + appState.getOffsetY();
@@ -104,15 +108,21 @@ public class GraphRenderer {
         for (javafx.scene.Node node : functionContainer.getChildren()) {
             if (node instanceof VBox) {
                 VBox mainRow = (VBox) node;
+                boolean isHidden = (boolean) mainRow.getProperties().getOrDefault("isHidden", false);
+                if (isHidden) continue;
                 Color rowColor = (Color) mainRow.getUserData();
                 StackPane inputWrapper = (StackPane) mainRow.getChildren().get(0);
                 VBox fieldAndPrompt = (VBox) inputWrapper.getChildren().get(0);
-                TextField inputBox = (TextField) fieldAndPrompt.getChildren().get(0);
+                // MathRenderer wrapped the TextField inside a StackPane (inputInner)
+                StackPane inputInner = (StackPane) fieldAndPrompt.getChildren().get(0);
+                TextField inputBox = (TextField) inputInner.getChildren().get(0);
 
                 String rawInput = inputBox.getText().trim();
                 if (rawInput.isEmpty()) continue;
 
-                String eqStr = rawInput.replace(" ", "");
+                // Reverse any unicode pretty-print chars (², √, π, ≤, ≥ …) back to
+                // ASCII before the boundary splitter and all plotters see the string.
+                String eqStr = EquationHandler.reverseAutoFormat(rawInput.replace(" ", ""));
                 FunctionPlotter.BoundaryCondition boundary = null;
 
                 // ⚠️ NEW: বাউন্ডারি কন্ডিশন { } চেক করা এবং আলাদা করা
@@ -329,8 +339,17 @@ public class GraphRenderer {
         int index = 0;
         for (javafx.scene.Node node : functionContainer.getChildren()) {
             if (node instanceof VBox) {
-                VBox mainRow = (VBox) node; StackPane inputWrapper = (StackPane) mainRow.getChildren().get(0);
-                VBox fieldAndPrompt = (VBox) inputWrapper.getChildren().get(0); TextField inputBox = (TextField) fieldAndPrompt.getChildren().get(0);
+                VBox mainRow = (VBox) node;
+                boolean isHidden = (boolean) mainRow.getProperties().getOrDefault("isHidden", false);
+                if (isHidden) {
+                    index++;
+                    continue;
+                }
+
+                StackPane inputWrapper = (StackPane) mainRow.getChildren().get(0);
+                VBox fieldAndPrompt = (VBox) inputWrapper.getChildren().get(0);
+                StackPane inputInner2 = (StackPane) fieldAndPrompt.getChildren().get(0);
+                TextField inputBox = (TextField) inputInner2.getChildren().get(0);
                 String eq = inputBox.getText();
                 if (!eq.trim().isEmpty() && !(eq.startsWith("(") && eq.endsWith(")"))) {
                     try {
@@ -442,8 +461,16 @@ public class GraphRenderer {
         List<EqWrapper> allExprs = new ArrayList<>();
         for (javafx.scene.Node node : functionContainer.getChildren()) {
             if (node instanceof VBox) {
-                VBox mainRow = (VBox) node; StackPane inputWrapper = (StackPane) mainRow.getChildren().get(0);
-                VBox fieldAndPrompt = (VBox) inputWrapper.getChildren().get(0); TextField inputBox = (TextField) fieldAndPrompt.getChildren().get(0);
+                VBox mainRow = (VBox) node;
+
+                // ⚠️ NEW: Eye Button Check
+                boolean isHidden = (boolean) mainRow.getProperties().getOrDefault("isHidden", false);
+                if (isHidden) continue;
+
+                StackPane inputWrapper = (StackPane) mainRow.getChildren().get(0);
+                VBox fieldAndPrompt = (VBox) inputWrapper.getChildren().get(0);
+                StackPane inputInner3 = (StackPane) fieldAndPrompt.getChildren().get(0);
+                TextField inputBox = (TextField) inputInner3.getChildren().get(0);
                 String eq = inputBox.getText();
                 if (!eq.trim().isEmpty() && !(eq.startsWith("(") && eq.endsWith(")"))) {
                     try { allExprs.add(new EqWrapper(eq, appState.getGlobalVariables())); } catch (Exception ignored) {}
