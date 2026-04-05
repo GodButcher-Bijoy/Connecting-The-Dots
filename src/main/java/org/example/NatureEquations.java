@@ -104,13 +104,26 @@ public class NatureEquations extends EquationCategory {
         return new EquationPreset(
                 "Kawaii Cloud ☁", "Cute kawaii smiling cloud with blue tummy", 45.0,
 
-                EquationEntry.of("x² +(y-1.5)² = 9.6{y≥2.97}", "#FF69B4"),
-                EquationEntry.of("(x+3.5)² + (y- 0.5)² = 6.7{0≤y,x≤-2.73}", "#FF69B4"),
-                EquationEntry.of("(x+3.5)² + (y- 0.5)² = 6.7{0≥y,x≤-2.94}", "#FF69B4"),
-                EquationEntry.of("(x-3.5)² + (y- 0.5)² =6.7{0≤y,x≥2.73}", "#FF69B4"),
-                EquationEntry.of("(x-3.5)² + (y- 0.5)² = 6.7{0≥y,x≥2.94}", "#FF69B4"),
-                EquationEntry.of("(x+1.5)² + (y+0.5)² = 4.4{-2.94≤x≤0,y≤0}", "#FF69B4"),
-                EquationEntry.of("(x-1.5)² + (y+0.5)² = 4.4{y≤-1.97}", "#FF69B4")
+                EquationEntry.of("x² +(y-1.5)² = 9.6{y≥2.97}", "#000000"),
+                EquationEntry.of("(x+3.5)² + (y- 0.5)² = 6.7{0≤y,x≤-2.73}", "#000000"),
+                EquationEntry.of("(x+3.5)² + (y- 0.5)² = 6.7{0≥y,x≤-2.94}", "#000000"),
+                EquationEntry.of("(x-3.5)² + (y- 0.5)² =6.7{0≤y,x≥2.73}", "#000000"),
+                EquationEntry.of("(x-3.5)² + (y- 0.5)² = 6.7{0≥y,x≥2.94}", "#000000"),
+                EquationEntry.of("(x+1.5)² + (y+0.5)² = 4.4{-2.94≤x≤0,y≤0}", "#000000"),
+                EquationEntry.of("(x-1.5)² + (y+0.5)² = 4.4{y≤-1.97}", "#000000"),
+                EquationEntry.of("(x+1.5)² +(y-1)²/1.5 ≤0.3", "#000000"),
+                EquationEntry.of("(x-1.5)² +(y-1)²/1.5 ≤0.3", "#000000"),
+                EquationEntry.of("(x+1.35)² +(y-1)²≤0.1", "#FFFFFF"),
+                EquationEntry.of("(x+1.35)² +(y-1)²≤0.1", "#FFFFFF"),
+                EquationEntry.of("(x-1.65)² +(y-1)²≤0.1", "#FFFFFF"),
+                EquationEntry.of("(x-1.65)² +(y-1)²≤0.1", "#FFFFFF"),
+                EquationEntry.of("(x+1.8)²/1.5+(y+0.05)² ≤ 0.1", "#d6204e"),
+                EquationEntry.of("(x-1.8)²/1.5 +(y+0.05)² ≤0.1", "#d6204e"),
+                EquationEntry.of("y = 0.5x² - 0.5{-0.8≤x≤0.8}", "#d6204e")
+
+
+
+
 
         );
     }
