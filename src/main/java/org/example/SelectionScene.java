@@ -71,6 +71,7 @@ public class SelectionScene {
             PhongMaterial edgeMat = new PhongMaterial(Color.TRANSPARENT);
             Group wireframe = createWireframeCube(cubeSize, edgeMat);
             wireframe.setScaleY(0.01);
+            wireframe.setTranslateY(99999); // park below scene so black fill doesn't cover grid
             wireframe.getProperties().put("available", true);
             wireframe.getProperties().put("edgeMat", edgeMat);
             cubePool.add(wireframe);
@@ -115,7 +116,7 @@ public class SelectionScene {
                 edgeMat.setDiffuseColor(Color.TRANSPARENT);
                 edgeMat.setSpecularColor(Color.TRANSPARENT);
                 availableCube.setScaleY(0.01);
-                availableCube.setTranslateY(0);
+                availableCube.setTranslateY(99999); // park below scene again
                 availableCube.getProperties().put("available", true);
             });
 

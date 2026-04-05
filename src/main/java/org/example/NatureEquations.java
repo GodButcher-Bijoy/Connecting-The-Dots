@@ -24,7 +24,7 @@ public class NatureEquations extends EquationCategory {
     public List<EquationPreset> getPresets() {
         return Arrays.asList(
                 roseCurve(),
-                cardioid(),
+                Volcano(),
                 fourLeafClover(),
                 nautilus(),
                 sunflower(),
@@ -53,11 +53,24 @@ public class NatureEquations extends EquationCategory {
         );
     }
 
-    // Cardioid  r = 1 - cos(θ)
-    private EquationPreset cardioid() {
+
+    private EquationPreset Volcano() {
         return new EquationPreset(
-                "Cardioid 💕", "Cardioid: r = 1 - cos(θ), parametric form", 55.0,
-                EquationEntry.of("((2*cos(t)-cos(2*t)),(2*sin(t)-sin(2*t)))", "#FF69B4")  // hot pink
+                "Volcano ", "Volcano", 13.0,
+                EquationEntry.of("y=.2*(x-24)^2+2{16<x<24}", "#000000"),
+                EquationEntry.of("y=.2*(x+2)²+2{-2<x<6}", "#000000"),
+                EquationEntry.of("y=-.4*√(169-(x-11)²)+.5*sin(x)+2.5", "#000000"),
+                EquationEntry.of("y=-.2*√(25-(x-11)²)+15", "#ff5500"),
+                EquationEntry.of("-.7*(x-15)²+19.5≤y≤-(x-15)²+22{12.2<x<17.8}", "#ff5500"),
+                EquationEntry.of("-.45*(x-6.3)²+19.5≤y≤-.7*(x-6)²+24{1.16<x<9.76}", "#ff5500"),
+                EquationEntry.of("-(x-16)²+30≤y≤.1*√(25-(x-11)²)+30{12<x<16}", "#ff5500"),
+                EquationEntry.of("-(x-6)²+30≤y≤.1*√(25-(x-11)²)+30{6<x<10}", "#ff5500"),
+                EquationEntry.of("-.9*√(169-(x-11.9)²)+4*sin(2*x)+21≤y≤-.2*√(25-(x-11)²)+15{4.73<x<16.33}", "#ff5500"),
+                EquationEntry.of("y=.2*√(25-(x-11)²)+15{x<9.12}", "#000000"),
+                EquationEntry.of("y=.2*√(25-(x-11)²)+15{x>12.74}", "#000000"),
+                EquationEntry.of("-.2*√(25-(x-11)²)+15≤y≤.1*√(25-(x-11)²)+30{10<x<12}", "#ff5500"),
+                EquationEntry.of("-.9*√(169-(x-11.9)²)+4*sin(2*x)+21≤y≤.2*(x-24)²+2{16<x<16.33}", "#ff5500"),
+                EquationEntry.of("-.9*√(169-(x-11.9)²)+4*sin(2*x)+21≤y≤.2*(x+2)²+2{4.73<x<6}", "#ff5500")
         );
     }
 
