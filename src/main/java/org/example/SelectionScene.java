@@ -19,45 +19,38 @@ import java.util.List;
 
 public class SelectionScene {
 
-    public static Parent createView(Runnable onStandard, Runnable onPolar, Runnable onLibrary) {
-        StackPane root = new StackPane();
-        root.setStyle("-fx-background-color: #050505;");
-
-        // =========================================================
-        // 1. TRUE 3D LAYER: Grid & Popping Cubes
-        // =========================================================
+    // =========================================================================
+    // SHARED 3D BACKGROUND BUILDER
+    // Builds the neon grid + popping wireframe cube SubScene and vignette.
+    // Returns a list with [SubScene, vignetteRectangle] — add both to your root.
+    // The SubScene's width/height are auto-bound to the given StackPane root.
+    // =========================================================================
+    private static List<javafx.scene.Node> create3DBackground(StackPane root) {
         Group group3D = new Group();
 
         AmbientLight light = new AmbientLight(Color.WHITE);
         group3D.getChildren().add(light);
 
-        // --- Build the 3D Floor Grid using Box objects ---
-        // Line nodes are 2D primitives — they vanish when viewed edge-on
-        // from a perspective camera. Thin Box shapes are proper 3D and
-        // always render regardless of viewing angle.
         double gridSize = 6000;
         double step     = 150;
-        double lineW    = 2.5;  // visible width of each grid line
-        double lineH    = 1.5;  // flat height sitting on the floor plane
+        double lineW    = 2.5;
+        double lineH    = 1.5;
 
         PhongMaterial gridMat = new PhongMaterial(Color.web("#AAAAAA", 0.9));
 
         for (double i = -gridSize / 2; i <= gridSize / 2; i += step) {
-            // Horizontal line — runs along X axis, positioned at Z = i
             Box hLine = new Box(gridSize, lineH, lineW);
             hLine.setTranslateZ(i);
             hLine.setMaterial(gridMat);
 
-            // Vertical line — runs along Z axis, positioned at X = i
             Box vLine = new Box(lineW, lineH, gridSize);
             vLine.setTranslateX(i);
-            vLine.setTranslateY(lineH); // offset below hLines to prevent z-fighting at intersections
+            vLine.setTranslateY(lineH);
             vLine.setMaterial(gridMat);
 
             group3D.getChildren().addAll(hLine, vLine);
         }
 
-        // --- Build the 3D Popping Cubes Pool ---
         double cubeSize = step - 20;
         List<Group> cubePool = new ArrayList<>();
         Color[] neonColors = {
@@ -71,7 +64,7 @@ public class SelectionScene {
             PhongMaterial edgeMat = new PhongMaterial(Color.TRANSPARENT);
             Group wireframe = createWireframeCube(cubeSize, edgeMat);
             wireframe.setScaleY(0.01);
-            wireframe.setTranslateY(99999); // park below scene so black fill doesn't cover grid
+            wireframe.setTranslateY(99999);
             wireframe.getProperties().put("available", true);
             wireframe.getProperties().put("edgeMat", edgeMat);
             cubePool.add(wireframe);
@@ -116,7 +109,7 @@ public class SelectionScene {
                 edgeMat.setDiffuseColor(Color.TRANSPARENT);
                 edgeMat.setSpecularColor(Color.TRANSPARENT);
                 availableCube.setScaleY(0.01);
-                availableCube.setTranslateY(99999); // park below scene again
+                availableCube.setTranslateY(99999);
                 availableCube.getProperties().put("available", true);
             });
 
@@ -139,7 +132,6 @@ public class SelectionScene {
         spawner.setCycleCount(Animation.INDEFINITE);
         spawner.play();
 
-        // --- Setup the 3D SubScene & Camera ---
         SubScene subScene3D = new SubScene(group3D, 1920, 1080, true, SceneAntialiasing.BALANCED);
         subScene3D.setFill(Color.TRANSPARENT);
         subScene3D.widthProperty().bind(root.widthProperty());
@@ -154,14 +146,10 @@ public class SelectionScene {
         camera.setRotate(-20);
         subScene3D.setCamera(camera);
 
-        // =========================================================
-        // 2. VIGNETTE OVERLAY
-        // =========================================================
         Rectangle edgeFade = new Rectangle();
         edgeFade.widthProperty().bind(root.widthProperty());
         edgeFade.heightProperty().bind(root.heightProperty());
         edgeFade.setMouseTransparent(true);
-
         RadialGradient fadeGradient = new RadialGradient(
                 0, 0, 0.5, 0.5, 0.7, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.TRANSPARENT),
@@ -169,9 +157,23 @@ public class SelectionScene {
         );
         edgeFade.setFill(fadeGradient);
 
-        // =========================================================
-        // 3. UI LAYER
-        // =========================================================
+        List<javafx.scene.Node> layers = new ArrayList<>();
+        layers.add(subScene3D);
+        layers.add(edgeFade);
+        return layers;
+    }
+
+    // =========================================================================
+    // MAIN SELECTION SCREEN
+    // =========================================================================
+    public static Parent createView(Runnable onStandard, Runnable onPolar, Runnable onLibrary, Runnable onAbout) {
+        StackPane root = new StackPane();
+        root.setStyle("-fx-background-color: #050505;");
+
+        // 3D background
+        root.getChildren().addAll(create3DBackground(root));
+
+        // UI Layer
         VBox buttonsBox = new VBox(40);
         buttonsBox.setAlignment(Pos.CENTER_RIGHT);
         buttonsBox.setPadding(new Insets(0, 100, 0, 0));
@@ -187,19 +189,13 @@ public class SelectionScene {
 
         buttonsBox.getChildren().addAll(btnStandard, btnPolar, btnLibrary);
 
-        // --- LEFT SIDE: Vertical Monolithic Slogan ---
         VBox leftBox = new VBox(-15);
         leftBox.setAlignment(Pos.CENTER_LEFT);
         leftBox.setPadding(new Insets(0, 0, 0, 100));
         leftBox.setPickOnBounds(false);
 
         String fontName = "Arial Black";
-
-        String baseTextStyle = "-fx-font-family: '" + fontName + "'; " +
-                "-fx-font-size: 95px; " +
-                "-fx-font-weight: bold; " +
-                "-fx-text-fill: #FFFFFF; " +
-                "-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.2), 15, 0.4, 0, 0);";
+        String baseTextStyle = "-fx-font-family: '" + fontName + "'; -fx-font-size: 95px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.2), 15, 0.4, 0, 0);";
 
         Label word1 = new Label("SHAPE");
         Label word2 = new Label("YOUR");
@@ -209,7 +205,6 @@ public class SelectionScene {
         word2.setStyle(baseTextStyle);
         word3.setStyle(baseTextStyle.replace("#FFFFFF", "#00FFFF"));
 
-        // Floating animation on CURIOSITY
         TranslateTransition floatAnim = new TranslateTransition(Duration.millis(2000), word3);
         floatAnim.setByY(-12);
         floatAnim.setAutoReverse(true);
@@ -219,18 +214,91 @@ public class SelectionScene {
 
         leftBox.getChildren().addAll(word1, word2, word3);
 
+        Button btnAbout = new Button("ABOUT US");
+        setupFloatingButton(btnAbout, "#FFFFFF", onAbout);
+        btnAbout.setPrefWidth(200);
+        btnAbout.setStyle(btnAbout.getStyle() + "-fx-font-size: 14px; -fx-padding: 15 30;");
+
+        StackPane bottomPane = new StackPane(btnAbout);
+        bottomPane.setAlignment(Pos.BOTTOM_RIGHT);
+        bottomPane.setPadding(new Insets(0, 50, 50, 0));
+        bottomPane.setPickOnBounds(false);
+
         BorderPane uiLayer = new BorderPane();
         uiLayer.setRight(buttonsBox);
         uiLayer.setLeft(leftBox);
+        uiLayer.setBottom(bottomPane);
         uiLayer.setPickOnBounds(false);
 
-        root.getChildren().addAll(subScene3D, edgeFade, uiLayer);
+        root.getChildren().add(uiLayer);
         return root;
     }
 
     // =========================================================================
-    // FLOATING & SINKING BUTTON LOGIC
+    // ABOUT US SCENE — now uses the same 3D background as the main menu
     // =========================================================================
+    public static Parent createAboutScene(Runnable onBack) {
+        StackPane root = new StackPane();
+        root.setStyle("-fx-background-color: #050505;");
+
+        // ── 1. Same 3D grid + neon cube background ──
+        root.getChildren().addAll(create3DBackground(root));
+
+        // ── 2. Content overlay ──
+        AnchorPane layout = new AnchorPane();
+        layout.setPickOnBounds(false);
+
+        VBox block1 = createTransparentBlock(
+                "Md. Ashraf Hossain ",
+                "Core Developer & Systems Logic",
+                "Git Link: ",
+                "https://github.com/ASHFOX474"
+        );
+
+        VBox block2 = createTransparentBlock(
+                "Lokonath Basak Bijoy",
+                "UI Designer & 3D Visual Developer",
+                "Git Link: ",
+                " https://github.com/GodButcher-Bijoy"
+        );
+
+        AnchorPane.setLeftAnchor(block1, 150.0);
+        AnchorPane.setTopAnchor(block1, 200.0);
+
+        AnchorPane.setRightAnchor(block2, 150.0);
+        AnchorPane.setBottomAnchor(block2, 200.0);
+
+        Button btnBack = new Button("BACK TO MENU");
+        setupFloatingButton(btnBack, "#00FFFF", onBack);
+        AnchorPane.setLeftAnchor(btnBack, 50.0);
+        AnchorPane.setBottomAnchor(btnBack, 50.0);
+
+        layout.getChildren().addAll(block1, block2, btnBack);
+        root.getChildren().add(layout);
+
+        return root;
+    }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+    private static VBox createTransparentBlock(String l1Txt, String l2Txt, String l3Txt, String l4Txt) {
+        VBox box = new VBox(10);
+        box.setStyle("-fx-background-color: rgba(15, 15, 15, 0.75); -fx-background-radius: 15; -fx-padding: 30; -fx-border-color: rgba(255,255,255,0.3); -fx-border-radius: 15;");
+        box.setPrefWidth(400);
+
+        String styleHeader = "-fx-text-fill: #00FFFF; -fx-font-size: 28px; -fx-font-weight: bold; -fx-font-family: 'Arial';";
+        String styleBody   = "-fx-text-fill: #FFFFFF; -fx-font-size: 18px; -fx-font-family: 'Arial';";
+
+        Label line1 = new Label(l1Txt); line1.setStyle(styleHeader);
+        Label line2 = new Label(l2Txt); line2.setStyle(styleBody);
+        Label line3 = new Label(l3Txt); line3.setStyle(styleBody);
+        Label line4 = new Label(l4Txt); line4.setStyle(styleBody);
+
+        box.getChildren().addAll(line1, line2, line3, line4);
+        return box;
+    }
+
     private static void setupFloatingButton(Button btn, String neonHex, Runnable action) {
         String baseStyle =
                 "-fx-font-size: 16px; " +

@@ -35,9 +35,17 @@ public class MainApp1 extends Application {
         Parent selectionRoot = SelectionScene.createView(
                 () -> launchMainUI(AppState.GraphMode.STANDARD, null), // Clicked Standard
                 () -> launchMainUI(AppState.GraphMode.POLAR, null),    // Clicked Polar
-                () -> showLibraryScreen()                              // Clicked Experience Curves
+                () -> showLibraryScreen(),                             // Clicked Experience Curves
+                () -> showAboutScreen()                                // Clicked About Us
         );
         mainStage.getScene().setRoot(selectionRoot);
+    }
+
+    // Add this method right below it to handle the About screen routing
+    private void showAboutScreen() {
+        // Passes the action to return to the Selection Screen when "BACK TO MENU" is clicked
+        Parent aboutRoot = SelectionScene.createAboutScene(() -> showSelectionScreen());
+        mainStage.getScene().setRoot(aboutRoot);
     }
 
     private void showLibraryScreen() {
