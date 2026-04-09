@@ -56,9 +56,6 @@ Over 20 hand-crafted presets across 5 categories — Batman, Pikachu, Mickey Mou
 
 ## 📦 Installation
 
-> **No Java installation required.**  
-> The app is fully self-contained — just download, extract, and run.
-
 ---
 
 ### 📥 Step 1 — Download
