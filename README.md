@@ -2,15 +2,14 @@
 
 <div align="center">
 
-![Graphify Banner](https://img.shields.io/badge/Graphify-Mathematical%20Grapher-9D00FF?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xOSAzSDVjLTEuMSAwLTIgLjktMiAydjE0YzAgMS4xLjkgMiAyIDJoMTRjMS4xIDAgMi0uOSAyLTJWNWMwLTEuMS0uOS0yLTItMnptLTcgM2MuNTUgMCAxIC40NSAxIDF2Mmgyd' />
+![Graphify Banner](https://img.shields.io/badge/Graphify-Mathematical%20Grapher-9D00FF?style=for-the-badge)
 
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
-[![JavaFX](https://img.shields.io/badge/JavaFX-21-0078D4?style=flat-square)](https://openjfx.io/)
-[![Maven](https://img.shields.io/badge/Maven-3.x-C71A36?style=flat-square&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+[![Platform macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Platform Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![JavaFX](https://img.shields.io/badge/Powered%20by-JavaFX%2021-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjfx.io/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=flat-square)]()
 
-**A stunning, feature-rich mathematical graphing application built with JavaFX.**
+**A stunning, feature-rich mathematical graphing application.**  
 Plot equations, explore curves, and visualize mathematics like never before.
 
 [Features](#-features) · [Installation](#-installation) · [Usage](#-usage) · [Library](#-equation-library) · [Troubleshooting](#-troubleshooting)
@@ -51,173 +50,104 @@ Plot equations, explore curves, and visualize mathematics like never before.
 - **20-color palette** per graph with full custom color support
 
 ### 📚 Equation Library
-Over 20 hand-crafted presets across 5 categories, including Batman, Pikachu, Mickey Mouse, Captain America Shield, and much more. See [Equation Library](#-equation-library) for the full list.
-
----
-
-## 🖥️ Screenshots
-
-| Intro Screen | Main Graph View |
-|:---:|:---:|
-| *3D animated intro with rolling cube* | *Dark sidebar + white graph canvas* |
-
-| Equation Library | Polar Mode |
-|:---:|:---:|
-| *Browse preset art and shapes* | *Concentric grid with radial labels* |
+Over 20 hand-crafted presets across 5 categories — Batman, Pikachu, Mickey Mouse, Captain America Shield, and much more.
 
 ---
 
 ## 📦 Installation
 
-### Prerequisites
-
-Before installing Graphify, make sure you have the following:
-
-| Requirement | Version | Download |
-|---|---|---|
-| Java JDK | 17 or higher | [adoptium.net](https://adoptium.net/) |
-| Apache Maven | 3.8+ | [maven.apache.org](https://maven.apache.org/download.cgi) |
-| Git *(optional)* | Any | [git-scm.com](https://git-scm.com/) |
-
-> 💡 **Tip:** On macOS with Homebrew, run `brew install openjdk@17 maven`
+> **No Java installation required.**  
+> The app is fully self-contained — just download, extract, and run.
 
 ---
 
-### 🪟 Windows
+### 📥 Step 1 — Download
 
-**Step 1 — Install Java 17**
-1. Go to [https://adoptium.net](https://adoptium.net/)
-2. Download **Temurin 17 (LTS)** for Windows x64
-3. Run the installer and check **"Set JAVA_HOME"** during setup
-4. Verify: open Command Prompt and run:
-   ```
-   java -version
-   ```
-   You should see `openjdk version "17.x.x"`
+1. Go to the [**Releases**](https://github.com/yourusername/Graphify/releases/latest) page
+2. Download **`Graphify-Installers.zip`**
+3. **Extract the ZIP** — you will find two files inside:
 
-**Step 2 — Install Maven**
-1. Download the binary zip from [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
-2. Extract to `C:\Program Files\Maven`
-3. Add `C:\Program Files\Maven\bin` to your `PATH` environment variable
-4. Verify:
-   ```
-   mvn -version
-   ```
-
-**Step 3 — Get the project**
-```bat
-:: Option A — unzip the downloaded ZIP into a folder, then:
-cd path\to\Graphify
-
-:: Option B — if using git:
-git clone https://github.com/yourusername/Graphify.git
-cd Graphify
+```
+Graphify-Installers/
+├── Graphify.dmg      ← for macOS
+└── Graphify.exe      ← for Windows
 ```
 
-**Step 4 — Run**
-```bat
-mvn javafx:run
-```
+Use the file that matches your operating system.
 
 ---
 
-### 🍎 macOS
+### 🍎 macOS — Install from `.dmg`
 
-**Step 1 — Install Java 17**
+**Step 2 — Open the disk image**
 
-*Option A — Homebrew (recommended):*
-```bash
-brew install openjdk@17
-echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+Double-click `Graphify.dmg`. A window opens showing the Graphify app icon.
+
+**Step 3 — Drag to Applications**
+
+Drag the **Graphify** icon into the **Applications** folder shortcut shown in the window:
+
+```
+  ┌─────────────────────────────────────┐
+  │                                     │
+  │   🟣 Graphify   →→→   Applications  │
+  │                                     │
+  └─────────────────────────────────────┘
 ```
 
-*Option B — Manual installer:*
-1. Download Temurin 17 from [https://adoptium.net](https://adoptium.net/)
-2. Open the `.pkg` file and follow the installer
+**Step 4 — Eject the disk image**
 
-Verify:
-```bash
-java -version
-```
+Right-click the mounted drive on your Desktop and select **Eject**.
 
-**Step 2 — Install Maven**
+**Step 5 — Launch Graphify**
 
-*Option A — Homebrew:*
-```bash
-brew install maven
-```
-
-*Option B — Manual:*
-```bash
-curl -O https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
-tar xzvf apache-maven-3.9.6-bin.tar.gz
-sudo mv apache-maven-3.9.6 /opt/maven
-echo 'export PATH="/opt/maven/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-Verify:
-```bash
-mvn -version
-```
-
-**Step 3 — Get the project**
-```bash
-# Unzip the downloaded ZIP:
-unzip Graphify.zip
-cd Graphify
-
-# OR clone with git:
-git clone https://github.com/yourusername/Graphify.git
-cd Graphify
-```
-
-**Step 4 — Run**
-```bash
-mvn javafx:run
-```
+Open **Launchpad** or your **Applications** folder and click **Graphify**.
 
 ---
 
-### 🐧 Linux (Ubuntu / Debian)
-
-**Step 1 — Install Java 17**
-```bash
-sudo apt update
-sudo apt install openjdk-17-jdk -y
-java -version
-```
-
-**Step 2 — Install Maven**
-```bash
-sudo apt install maven -y
-mvn -version
-```
-
-**Step 3 — Get the project**
-```bash
-unzip Graphify.zip && cd Graphify
-# OR
-git clone https://github.com/yourusername/Graphify.git && cd Graphify
-```
-
-**Step 4 — Run**
-```bash
-mvn javafx:run
-```
+> ⚠️ **First-launch security prompt on macOS**
+>
+> macOS may show: *"Graphify cannot be opened because it is from an unidentified developer."*
+>
+> **Fix — allow it in one of two ways:**
+>
+> **Option A (easier):**
+> Right-click `Graphify.app` → click **Open** → click **Open** in the dialog.
+>
+> **Option B:**
+> 1. Open **System Settings → Privacy & Security**
+> 2. Scroll down to the Security section
+> 3. Click **"Open Anyway"** next to the Graphify message
+> 4. Confirm with **"Open"**
+>
+> You only need to do this once.
 
 ---
 
-### ⚡ IntelliJ IDEA (All platforms)
+### 🪟 Windows — Install from `.exe`
 
-1. Open IntelliJ IDEA
-2. Click **File → Open** and select the `Graphify` folder
-3. IntelliJ will detect the `pom.xml` and import the Maven project automatically
-4. Wait for dependencies to download (first run only)
-5. Open the **Maven** panel (right sidebar) → **Plugins → javafx → javafx:run**
+**Step 2 — Run the installer**
 
-   **OR** open `MainApp1.java` and click the green ▶ **Run** button
+Double-click `Graphify.exe`.
+
+**Step 3 — Handle the SmartScreen prompt** *(if it appears)*
+
+If you see *"Windows protected your PC"*:
+1. Click **"More info"**
+2. Click **"Run anyway"**
+
+**Step 4 — Follow the setup wizard**
+
+| Step | What to do |
+|---|---|
+| Welcome screen | Click **Next** |
+| Choose install location | Keep default or pick your own, then click **Next** |
+| Install | Click **Install** |
+| Finish | Click **Finish** — Graphify launches automatically |
+
+**Step 5 — Launch Graphify anytime**
+
+Use the **Desktop shortcut** or find **Graphify** in your **Start Menu**.
 
 ---
 
@@ -232,8 +162,8 @@ mvn javafx:run
 | `y <= sin(x)` | Inequality shading |
 | `y = x^2 { -3 <= x <= 3 }` | Bounded curve |
 | `(cos(t), sin(t))` | Parametric |
-| `r = 1 + cos(t)` | Polar (use Polar mode) |
-| `ax + by = c` | Then add sliders for a, b, c |
+| `r = 1 + cos(t)` | Polar *(use Polar mode)* |
+| `ax + by = c` | Free variables → add sliders |
 
 ### Keyboard Shortcuts
 
@@ -244,31 +174,31 @@ mvn javafx:run
 | `Scroll` | Zoom in / out on the graph |
 | `Drag` | Pan the graph |
 
-### Slider Variables
+### Using Slider Variables
 
-1. Type an equation using free letters, e.g. `y = a*sin(b*x) + c`
-2. A prompt appears: **"add slider: a b c"**
-3. Click each variable or **"all"** to create sliders
-4. Drag sliders or press ▶ to animate
-5. Click ✕ on a slider to remove it
+1. Type an equation with free letters — e.g. `y = a * sin(b * x) + c`
+2. A prompt appears below: **"add slider: a  b  c"**
+3. Click each variable or **"all"** to create all sliders at once
+4. Drag the sliders to change values, or press **▶** to animate
+5. Click **✕** on a slider to remove it
 
 ---
 
 ## 📚 Equation Library
 
-Access the library from the **📚 Library ▾** button in the sidebar or via the **Experience Curves** screen.
+Access the library via the **📚 Library ▾** button in the sidebar, or from the **Experience Curves** screen on the home page.
 
 ### 🎭 Super-Heroes
 | Preset | Description |
 |---|---|
 | Batman 🦇 | The iconic bat-symbol |
 | Captain America Shield ⍟ | Concentric ring shield |
-| Pikachu 😊 | Face with ears and cheeks |
+| Pikachu 😊 | Face with ears and rosy cheeks |
 
 ### 🎓 College
 | Preset | Description |
 |---|---|
-| NDC 👑 | College sign with decorative elements |
+| NDC 👑 | College crest with decorative elements |
 | HCC 👸 | Ornate college emblem |
 | VNC 🐍 | Letter art with symbols |
 | DCC 🐔 | Stylized college design |
@@ -278,17 +208,17 @@ Access the library from the **📚 Library ▾** button in the sidebar or via th
 | Preset | Description |
 |---|---|
 | Tulip 🌷 | Full tulip with stem and leaves |
-| Volcano 🌋 | Erupting volcano with lava |
+| Volcano 🌋 | Erupting volcano with lava flow |
 | Drawing Scenery 🏞️ | Landscape with sky and terrain |
 | Sunflower 🌻 | Parametric petal pattern |
 | Kawaii Cloud ☁ | Smiling cloud with rosy cheeks |
 
-### 🐼 Cartoons *(Art category)*
+### 🐼 Cartoons
 | Preset | Description |
 |---|---|
-| Mickey Mouse 🐭 | Classic mouse face |
-| Halloween Pumpkin 🎃 | Jack-o'-lantern with face |
-| Among Us ඞ | Angel halo character |
+| Mickey Mouse 🐭 | Classic mouse face with ears |
+| Halloween Pumpkin 🎃 | Jack-o'-lantern with carved face |
+| Among Us ඞ | Angel halo crewmate character |
 | Yin Yang ☯ | Classic balance symbol |
 
 ### 💎 Cool Shapes
@@ -300,90 +230,48 @@ Access the library from the **📚 Library ▾** button in the sidebar or via th
 
 ---
 
-## 🗂️ Project Structure
-
-```
-Graphify/
-├── src/
-│   └── main/
-│       └── java/
-│           └── org/example/
-│               ├── MainApp1.java          ← App entry point
-│               ├── AppState.java          ← Global state (scale, offset, vars)
-│               ├── GraphRenderer.java     ← Canvas drawing + pan/zoom
-│               ├── FunctionPlotter.java   ← All equation plotting logic
-│               ├── AxesRenderer.java      ← Grid, axes, polar grid
-│               ├── UIManager.java         ← Sidebar, sliders, keypad
-│               ├── EquationHandler.java   ← Expression parsing (exp4j)
-│               ├── MathRenderer.java      ← Pretty-print overlay
-│               ├── IntroScene.java        ← 3D animated intro
-│               ├── SelectionScene.java    ← Mode selection screen
-│               ├── LibraryScene.java      ← Preset library browser
-│               ├── EquationLibrary.java   ← Category registry
-│               ├── EquationCategory.java  ← Abstract category base
-│               ├── EquationPreset.java    ← Named preset with entries
-│               ├── EquationEntry.java     ← Single equation + color
-│               ├── IntersectionCalculator.java ← Sign-change bisection
-│               ├── CartoonEquations.java  ← Super-heroes presets
-│               ├── CollegeEquations.java  ← College sign presets
-│               ├── NatureEquations.java   ← Nature curve presets
-│               ├── ArtEquations.java      ← Art/cartoon presets
-│               └── CoolShapesEquations.java ← Geometric presets
-└── pom.xml                                ← Maven build config
-```
-
----
-
 ## 🔧 Troubleshooting
 
-### `java: error: release version 17 not supported`
-Your Maven is using the wrong Java version.
+### macOS — "The application is damaged and can't be opened"
+The download picked up a quarantine attribute. Fix it with one Terminal command:
 ```bash
-# Check which Java Maven is using:
-mvn -version
-
-# Force Maven to use Java 17 (macOS/Linux):
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # macOS
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk       # Linux
+xattr -cr /Applications/Graphify.app
 ```
+Then try launching again.
 
-### `Error: JavaFX runtime components are missing`
-Do **not** run Graphify using `java -jar`. Always use:
-```bash
-mvn javafx:run
+### macOS — App won't open even after Privacy & Security approval
+Try the right-click method instead:
+```
+Right-click Graphify.app → Open → click "Open" in the dialog
 ```
 
-### App window is blank / black on macOS
-This is a known JavaFX issue on Apple Silicon with some GPU drivers.
-```bash
-# Add this flag to your run command:
-mvn javafx:run -Djavafx.verbose=true
-```
-Or in IntelliJ: **Run → Edit Configurations → VM Options** → add:
-```
--Dprism.order=sw
-```
+### Windows — Installer flagged by antivirus
+This is a common false positive for new, unsigned apps. To resolve:
+- Temporarily pause real-time protection in your antivirus
+- Run `Graphify.exe` → complete the installation
+- Re-enable protection
 
-### Slow graph rendering on first launch
-Maven downloads all dependencies on the first run. This is normal and only happens once. Subsequent launches are fast.
+### Windows — App crashes immediately on launch
+Ensure you are on **Windows 10 or later**. If the issue persists, try right-clicking the desktop shortcut and selecting **Run as administrator**.
 
-### `BUILD FAILURE` — dependencies not found
-```bash
-# Force re-download all dependencies:
-mvn dependency:resolve -U
-mvn javafx:run
-```
+### Graph appears blank after opening
+Click the **🔍 re-center button** (top-right corner of the graph) to reset the view to the origin at the default zoom level.
+
+### An equation doesn't plot and shows no error
+- Use `*` explicitly for multiplication: write `2*x`, not `2x`
+- Boundary conditions must use curly braces: `y = sin(x) { -pi <= x <= pi }`
+- Polar equations require **Polar mode** — select it from the home screen before graphing
 
 ---
 
-## 🛠️ Built With
+## 🛠️ Tech Stack
 
-| Technology | Purpose |
+| Technology | Role |
 |---|---|
 | [Java 17](https://openjdk.org/projects/jdk/17/) | Core language |
-| [JavaFX 21](https://openjfx.io/) | UI framework, Canvas, 3D |
+| [JavaFX 21](https://openjfx.io/) | UI, Canvas rendering, 3D intro |
 | [exp4j 0.4.8](https://www.objecthunter.net/exp4j/) | Math expression evaluator |
-| [Apache Maven](https://maven.apache.org/) | Build & dependency management |
+| [Apache Maven](https://maven.apache.org/) | Build & packaging |
 
 ---
 
@@ -396,7 +284,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ## 🙏 Acknowledgements
 
 - [exp4j](https://www.objecthunter.net/exp4j/) by Frank Asseg — powering all equation evaluation
-- [Desmos](https://www.desmos.com/) — for inspiration on the graphing UX
+- [Desmos](https://www.desmos.com/) — inspiration for the graphing UX
 - The JavaFX community for Canvas API documentation
 
 ---
